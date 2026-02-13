@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <div class="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4   ">
+                    <span class="text-4xl font-bold text-primary-600">{{ user.first_name|slice:":1"|default:user.username|slice:":1" }}</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ user.get_full_name|default:user.username }}</h1>
+                <p class="text-gray-600">{{ user.email }}</p>
+                <span class="inline-block mt-2 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm capitalize">
+                    {{ user.role }}
+                </span>
+            </div>
+            
+            <div class="border-t pt-6 space-y-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Username</span>
+                    <span class="font-medium">{{ user.username }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Email</span>
+                    <span class="font-medium">{{ user.email }}</span>
+                </div>
+                {% if user.phone %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Phone</span>
+                    <span class="font-medium">{{ user.phone }}</span>
+                </div>
+                {% endif %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Status</span>
+                    <span class="font-medium capitalize 
+                        {% if user.verification_status == 'verified' %}text-green-600
+                        {% elif user.verification_status == 'pending' %}text-yellow-600
+                        {% else %}text-red-600{% endif %}">
+                        {{ user.verification_status }}
+                    </span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Member Since</span>
+                    <span class="font-medium">{{ user.created_at|date:"F j, Y" }}</span>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex gap-4">
+                {% if user.role == 'citizen' %}
+                <a href="{% url 'become_provider' %}" class="flex-1 py-3 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition">
+                    Become a Provider
+                </a>
+                {% else %}
+                <a href="{% url 'provider_dashboard' %}" class="flex-1 py-3 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition">
+                    Go to Dashboard
+                </a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="flex-1 py-3 border-2 border-gray-300 text-gray-700 text-center rounded-lg font-medium hover:bg-gray-50 transition">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,489 @@
+{% extends 'base.html' %}
+
+{% block title %}Video Consultation - Legal Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .video-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        height: calc(100vh - 250px);
+    }
+    .video-wrapper {
+        background: #1f2937;
+        border-radius: 1rem;
+        overflow: hidden;
+        position: relative;
+    }
+    .video-wrapper video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .video-label {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .controls-bar {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    .control-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        transition: all 0.2s;
+    }
+    .control-btn:hover { transform: scale(1.1); }
+    .btn-mute { background: #374151; color: white; }
+    .btn-video { background: #374151; color: white; }
+    .btn-end { background: #dc2626; color: white; }
+    .btn-whiteboard { background: #6366f1; color: white; }
+    .btn-screen { background: #10b981; color: white; }
+    .btn-active { background: #dc2626 !important; }
+    
+    /* Screen share styles */
+    .video-container.screen-sharing { grid-template-columns: 1fr; }
+    .video-container.screen-sharing .screen-wrapper {
+        height: calc(100vh - 350px);
+    }
+    .video-container.screen-sharing .pip-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        height: 150px;
+    }
+    
+    @media (max-width: 768px) {
+        .video-container { grid-template-columns: 1fr; }
+        .video-wrapper { height: 40vh; }
+        .control-btn { width: 50px; height: 50px; font-size: 1.2rem; }
+    }
+    
+    .whiteboard-panel {
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+        transition: right 0.3s;
+        z-index: 1000;
+    }
+    .whiteboard-panel.open { right: 0; }
+    .whiteboard-canvas {
+        width: 100%;
+        height: calc(100% - 60px);
+        cursor: crosshair;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Video Consultation</h1>
+            <p class="text-gray-600">Room: {{ room_code }}</p>
+        </div>
+        <div id="connection-status" class="flex items-center gap-2">
+            <span class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
+            <span class="text-gray-600">Connecting...</span>
+        </div>
+    </div>
+    
+    <!-- Video Grid -->
+    <div class="video-container">
+        <div class="video-wrapper">
+            <video id="local-video" autoplay muted playsinline></video>
+            <div class="video-label">You</div>
+        </div>
+        <div class="video-wrapper">
+            <video id="remote-video" autoplay playsinline></video>
+            <div class="video-label" id="remote-label">Waiting for participant...</div>
+        </div>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls-bar">
+        <button class="control-btn btn-mute" id="btn-mute" onclick="toggleMute()" title="Mute/Unmute">
+            🎤
+        </button>
+        <button class="control-btn btn-video" id="btn-video" onclick="toggleVideo()" title="Camera On/Off">
+            📹
+        </button>
+        <button class="control-btn btn-screen" id="btn-screen" onclick="toggleScreenShare()" title="Share Screen">
+            🖥️
+        </button>
+        <button class="control-btn btn-whiteboard" onclick="toggleWhiteboard()" title="Whiteboard">
+            ✏️
+        </button>
+        <button class="control-btn btn-end" onclick="endCall()" title="End Call">
+            📞
+        </button>
+    </div>
+</div>
+
+<!-- Whiteboard Panel -->
+<div class="whiteboard-panel" id="whiteboard-panel">
+    <div class="p-4 border-b flex items-center justify-between">
+        <h3 class="font-semibold">Shared Whiteboard</h3>
+        <button onclick="toggleWhiteboard()" class="text-gray-500 hover:text-gray-700">✕</button>
+    </div>
+    <canvas id="whiteboard" class="whiteboard-canvas"></canvas>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const roomCode = '{{ room_code }}';
+const stunServers = {{ stun_servers|safe }};
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+let localStream = null;
+let remoteStream = null;
+let peerConnection = null;
+let videoSocket = null;
+
+// WebRTC configuration
+const rtcConfig = {
+    iceServers: stunServers.map(url => ({ urls: url }))
+};
+
+// Initialize
+async function init() {
+    try {
+        // Get local media
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
+        
+        document.getElementById('local-video').srcObject = localStream;
+        
+        // Connect WebSocket for signaling
+        connectSignaling();
+        
+    } catch (error) {
+        console.error('Error accessing media devices:', error);
+        alert('Could not access camera/microphone. Please check permissions.');
+    }
+}
+
+function connectSignaling() {
+    videoSocket = new WebSocket(`${wsProtocol}//${window.location.host}/ws/video/${roomCode}/`);
+    
+    videoSocket.onopen = function() {
+        updateStatus('connected', 'Connected');
+    };
+    
+    videoSocket.onclose = function() {
+        updateStatus('disconnected', 'Disconnected');
+        setTimeout(connectSignaling, 3000);
+    };
+    
+    videoSocket.onmessage = async function(e) {
+        const data = JSON.parse(e.data);
+        
+        switch(data.type) {
+            case 'participant_joined':
+                if (data.user_id !== '{{ request.user.id }}') {
+                    document.getElementById('remote-label').textContent = data.username;
+                    // Create offer if we're the provider
+                    {% if is_provider %}
+                    await createOffer();
+                    {% endif %}
+                }
+                break;
+            
+            case 'offer':
+                if (data.sender_id !== '{{ request.user.id }}') {
+                    await handleOffer(data.offer);
+                }
+                break;
+            
+            case 'answer':
+                if (data.sender_id !== '{{ request.user.id }}') {
+                    await handleAnswer(data.answer);
+                }
+                break;
+            
+            case 'ice-candidate':
+                if (data.sender_id !== '{{ request.user.id }}') {
+                    await handleIceCandidate(data.candidate);
+                }
+                break;
+            
+            case 'whiteboard':
+                if (data.sender_id !== '{{ request.user.id }}') {
+                    drawRemote(data.data);
+                }
+                break;
+            
+            case 'participant_left':
+                document.getElementById('remote-label').textContent = 'Participant left';
+                if (remoteStream) {
+                    document.getElementById('remote-video').srcObject = null;
+                }
+                break;
+        }
+    };
+}
+
+async function createOffer() {
+    peerConnection = createPeerConnection();
+    
+    localStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, localStream);
+    });
+    
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    
+    videoSocket.send(JSON.stringify({
+        type: 'offer',
+        offer: peerConnection.localDescription
+    }));
+}
+
+async function handleOffer(offer) {
+    peerConnection = createPeerConnection();
+    
+    localStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, localStream);
+    });
+    
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    
+    videoSocket.send(JSON.stringify({
+        type: 'answer',
+        answer: peerConnection.localDescription
+    }));
+}
+
+async function handleAnswer(answer) {
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+}
+
+async function handleIceCandidate(candidate) {
+    if (peerConnection) {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+}
+
+function createPeerConnection() {
+    const pc = new RTCPeerConnection(rtcConfig);
+    
+    pc.onicecandidate = (event) => {
+        if (event.candidate) {
+            videoSocket.send(JSON.stringify({
+                type: 'ice-candidate',
+                candidate: event.candidate
+            }));
+        }
+    };
+    
+    pc.ontrack = (event) => {
+        document.getElementById('remote-video').srcObject = event.streams[0];
+        remoteStream = event.streams[0];
+    };
+    
+    pc.onconnectionstatechange = () => {
+        updateStatus(pc.connectionState, pc.connectionState);
+    };
+    
+    return pc;
+}
+
+function updateStatus(state, text) {
+    const statusEl = document.getElementById('connection-status');
+    const colors = {
+        'connected': 'bg-green-500',
+        'connecting': 'bg-yellow-500',
+        'disconnected': 'bg-red-500',
+    };
+    statusEl.innerHTML = `
+        <span class="w-3 h-3 ${colors[state] || 'bg-gray-500'} rounded-full"></span>
+        <span class="text-gray-600">${text}</span>
+    `;
+}
+
+// Controls
+let isMuted = false;
+let isVideoOff = false;
+let isScreenSharing = false;
+let screenStream = null;
+
+function toggleMute() {
+    isMuted = !isMuted;
+    localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+    document.getElementById('btn-mute').classList.toggle('btn-active', isMuted);
+    document.getElementById('btn-mute').textContent = isMuted ? '🔇' : '🎤';
+}
+
+function toggleVideo() {
+    isVideoOff = !isVideoOff;
+    localStream.getVideoTracks().forEach(track => track.enabled = !isVideoOff);
+    document.getElementById('btn-video').classList.toggle('btn-active', isVideoOff);
+    document.getElementById('btn-video').textContent = isVideoOff ? '📷' : '📹';
+}
+
+async function toggleScreenShare() {
+    const btnScreen = document.getElementById('btn-screen');
+    
+    if (!isScreenSharing) {
+        try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: true,
+                audio: false
+            });
+            
+            const screenTrack = screenStream.getVideoTracks()[0];
+            
+            // Replace video track in peer connection
+            if (peerConnection) {
+                const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) {
+                    await sender.replaceTrack(screenTrack);
+                }
+            }
+            
+            // Show screen in local video
+            document.getElementById('local-video').srcObject = screenStream;
+            
+            // Handle when user stops sharing via browser UI
+            screenTrack.onended = () => {
+                stopScreenShare();
+            };
+            
+            isScreenSharing = true;
+            btnScreen.classList.add('btn-active');
+            btnScreen.textContent = '🖥️';
+            
+        } catch (error) {
+            console.error('Error sharing screen:', error);
+            if (error.name !== 'NotAllowedError') {
+                alert('Could not share screen. Please try again.');
+            }
+        }
+    } else {
+        stopScreenShare();
+    }
+}
+
+async function stopScreenShare() {
+    if (screenStream) {
+        screenStream.getTracks().forEach(track => track.stop());
+    }
+    
+    // Restore camera track
+    const videoTrack = localStream.getVideoTracks()[0];
+    if (peerConnection && videoTrack) {
+        const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (sender) {
+            await sender.replaceTrack(videoTrack);
+        }
+    }
+    
+    document.getElementById('local-video').srcObject = localStream;
+    
+    isScreenSharing = false;
+    const btnScreen = document.getElementById('btn-screen');
+    btnScreen.classList.remove('btn-active');
+    btnScreen.textContent = '🖥️';
+}
+
+function endCall() {
+    if (confirm('End this call?')) {
+        if (peerConnection) peerConnection.close();
+        if (localStream) localStream.getTracks().forEach(track => track.stop());
+        if (videoSocket) videoSocket.close();
+        window.location.href = '{% url "citizen_dashboard" %}';
+    }
+}
+
+// Whiteboard
+let isWhiteboardOpen = false;
+let isDrawing = false;
+let ctx = null;
+
+function toggleWhiteboard() {
+    isWhiteboardOpen = !isWhiteboardOpen;
+    document.getElementById('whiteboard-panel').classList.toggle('open', isWhiteboardOpen);
+    
+    if (isWhiteboardOpen && !ctx) {
+        initWhiteboard();
+    }
+}
+
+function initWhiteboard() {
+    const canvas = document.getElementById('whiteboard');
+    canvas.width = 400;
+    canvas.height = window.innerHeight - 60;
+    ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#1f2937';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    
+    let lastX = 0, lastY = 0;
+    
+    canvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+        
+        // Send to peer
+        videoSocket.send(JSON.stringify({
+            type: 'whiteboard',
+            data: { x1: lastX, y1: lastY, x2: e.offsetX, y2: e.offsetY }
+        }));
+        
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+    });
+    
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseout', () => isDrawing = false);
+}
+
+function drawRemote(data) {
+    if (!ctx) return;
+    ctx.beginPath();
+    ctx.moveTo(data.x1, data.y1);
+    ctx.lineTo(data.x2, data.y2);
+    ctx.stroke();
+}
+
+// Initialize on load
+init();
+</script>
+{% endblock %}

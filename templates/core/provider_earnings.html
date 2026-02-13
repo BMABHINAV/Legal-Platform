@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Earnings Dashboard - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">Earnings Dashboard</h1>
+                <p class="text-base-content/70 mt-1">Track your income and payment history</p>
+            </div>
+            <a href="{% url 'provider_dashboard' %}" class="btn btn-ghost mt-4 md:mt-0 gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to Dashboard
+            </a>
+        </div>
+        
+        <!-- Earnings Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 ">
+            <div class="card bg-gradient-to-br from-primary to-primary/70 text-primary-content shadow-xl ">
+                <div class="card-body">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-primary-content/80">Total Earnings</p>
+                            <p class="text-4xl font-bold" data-countup data-countup-prefix="₹">{{ total_earnings|floatformat:0 }}</p>
+                        </div>
+                        <svg class="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card bg-base-100 shadow-xl ">
+                <div class="card-body">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-base-content/70">Platform Fee (10%)</p>
+                            <p class="text-3xl font-bold text-error" data-countup data-countup-prefix="-₹">{{ platform_fee|floatformat:0 }}</p>
+                        </div>
+                        <svg class="w-10 h-10 text-error/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card bg-gradient-to-br from-success to-success/70 text-success-content shadow-xl ">
+                <div class="card-body">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-success-content/80">Net Earnings</p>
+                            <p class="text-4xl font-bold" data-countup data-countup-prefix="₹">{{ net_earnings|floatformat:0 }}</p>
+                        </div>
+                        <svg class="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="stat bg-base-100 rounded-xl shadow">
+                <div class="stat-title">Total Cases</div>
+                <div class="stat-value text-primary">{{ total_cases }}</div>
+            </div>
+            <div class="stat bg-base-100 rounded-xl shadow">
+                <div class="stat-title">Avg per Case</div>
+                <div class="stat-value text-info">₹{% widthratio net_earnings 1 total_cases|default:1 %}</div>
+            </div>
+        </div>
+        
+        <!-- Monthly Earnings Chart -->
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    Monthly Earnings
+                </h2>
+                
+                {% if monthly_earnings %}
+                <div class="overflow-x-auto">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Cases</th>
+                                <th>Earnings</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for month in monthly_earnings %}
+                            <tr>
+                                <td class="font-medium">{{ month.month|date:"F Y" }}</td>
+                                <td>{{ month.count }}</td>
+                                <td class="font-bold text-success">₹{{ month.total|floatformat:0 }}</td>
+                                <td>
+                                    <progress class="progress progress-success w-32" value="{{ month.total }}" max="{{ total_earnings }}"></progress>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-base-content/50">
+                    <p>No earnings data yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Transactions -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg class="w-6 h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    Recent Transactions
+                </h2>
+                
+                {% if completed_bookings %}
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Service</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in completed_bookings %}
+                            <tr>
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <div class="avatar placeholder">
+                                            <div class="w-8 bg-primary text-primary-content rounded-full">
+                                                <span class="text-xs">{{ booking.user.first_name|slice:":1" }}</span>
+                                            </div>
+                                        </div>
+                                        <span>{{ booking.user.get_full_name }}</span>
+                                    </div>
+                                </td>
+                                <td>{% if booking.service %}{{ booking.service.title }}{% else %}Consultation{% endif %}</td>
+                                <td>{{ booking.completed_at|date:"M d, Y" }}</td>
+                                <td class="font-bold text-success">₹{{ booking.amount }}</td>
+                                <td><span class="badge badge-success">Paid</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-base-content/50">
+                    <p>No transactions yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

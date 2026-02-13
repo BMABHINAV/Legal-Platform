@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Consultation - Legal Platform{% endblock %}
+
+{% block extra_head %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto ">
+        <a href="{% url 'provider_detail' provider.id %}" class="link link-primary mb-6 inline-flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Back to Profile
+        </a>
+        
+        <div class="card bg-base-100 shadow-2xl ">
+            <div class="card-body">
+                <h2 class="card-title text-2xl mb-1">Book Consultation</h2>
+                <p class="opacity-60 mb-6">Schedule a consultation with {{ provider.name }}</p>
+                
+                <!-- Provider Info Card -->
+                <div class="flex items-center gap-4 p-4 bg-base-200 rounded-xl mb-8">
+                    <div class="avatar placeholder">
+                        <div class="w-16 bg-primary text-primary-content rounded-full   ">
+                            <span class="text-2xl font-bold">{{ provider.name|slice:":1" }}</span>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold">{{ provider.name }}</h3>
+                        <p class="text-sm opacity-60 capitalize">{{ provider.provider_type }}</p>
+                        <div class="flex items-center gap-2 text-sm mt-1">
+                            <div class="rating rating-sm">
+                                <input type="radio" class="mask mask-star-2 bg-warning" disabled checked />
+                            </div>
+                            <span>{{ provider.rating }}</span>
+                            <span class="opacity-40">|</span>
+                            <span class="font-medium text-primary">₹{{ provider.hourly_rate }}/hr</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking Form with HTMX -->
+                <form hx-post="{% url 'create_booking' provider.id %}" 
+                      hx-target="#booking-result" 
+                      hx-swap="innerHTML"
+                      hx-indicator="#booking-spinner"
+                      id="booking-form">
+                    {% csrf_token %}
+                    
+                    <!-- Consultation Type -->
+                    <div class="mb-8">
+                        <h3 class="font-semibold mb-4">Consultation Type</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <label class="flex flex-col items-center gap-2 p-4 border-2 border-base-300 rounded-xl cursor-pointer hover:border-primary transition-all duration-300 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <input type="radio" name="consultation_type" value="video" class="radio radio-primary hidden" checked>
+                                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <span class="text-sm font-medium">Video</span>
+                            </label>
+                            <label class="flex flex-col items-center gap-2 p-4 border-2 border-base-300 rounded-xl cursor-pointer hover:border-primary transition-all duration-300 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <input type="radio" name="consultation_type" value="audio" class="radio radio-primary hidden">
+                                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                                <span class="text-sm font-medium">Audio</span>
+                            </label>
+                            <label class="flex flex-col items-center gap-2 p-4 border-2 border-base-300 rounded-xl cursor-pointer hover:border-primary transition-all duration-300 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <input type="radio" name="consultation_type" value="chat" class="radio radio-primary hidden">
+                                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                <span class="text-sm font-medium">Chat</span>
+                            </label>
+                            <label class="flex flex-col items-center gap-2 p-4 border-2 border-base-300 rounded-xl cursor-pointer hover:border-primary transition-all duration-300 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <input type="radio" name="consultation_type" value="in_person" class="radio radio-primary hidden">
+                                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                <span class="text-sm font-medium">In-Person</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Services Selection -->
+                    {% if services %}
+                    <div class="mb-8">
+                        <h3 class="font-semibold mb-4">Select a Service (Optional)</h3>
+                        <div class="space-y-3">
+                            {% for service in services %}
+                            <label class="flex items-start gap-3 p-4 border-2 border-base-300 rounded-xl cursor-pointer hover:border-primary transition-all duration-300 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <input type="radio" name="service" value="{{ service.id }}" class="radio radio-primary mt-1">
+                                <div class="flex-1">
+                                    <p class="font-medium">{{ service.title }}</p>
+                                    <p class="text-sm opacity-60">{{ service.description }}</p>
+                                    <p class="text-primary font-medium mt-1">₹{{ service.price }}</p>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Date/Time Selection -->
+                    <div class="mb-8">
+                        <h3 class="font-semibold mb-4">Select Date & Time</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Date</span>
+                                </label>
+                                <input type="date" name="date" id="booking-date" class="input input-bordered w-full"
+                                       min="{{ today }}"
+                                       hx-get="{% url 'check_availability' provider.id %}"
+                                       hx-trigger="change"
+                                       hx-target="#time-slots"
+                                       hx-swap="innerHTML">
+                            </div>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Time</span>
+                                </label>
+                                <div id="time-slots">
+                                    <select name="time" class="select select-bordered w-full">
+                                        <option value="">Select date first or choose a time</option>
+                                        <option value="09:00">9:00 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                        <option value="16:00">4:00 PM</option>
+                                        <option value="17:00">5:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs opacity-60 mt-2">Select a date to see available time slots, or choose from default times</p>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="form-control mb-8">
+                        <label class="label">
+                            <span class="label-text font-semibold">Describe Your Legal Matter</span>
+                        </label>
+                        <textarea name="notes" rows="4" 
+                                  placeholder="Please provide a brief description of your legal issue so the advocate can prepare..." class="textarea textarea-bordered"></textarea>
+                        <label class="label">
+                            <span class="label-text-alt text-info">This information is confidential and only shared with the advocate</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Booking Result Container (HTMX target) -->
+                    <div id="booking-result" class="mb-4"></div>
+                    
+                    <!-- Submit Button with Loading Indicator -->
+                    <button type="submit" class="btn btn-primary btn-block gap-2">
+                        <span id="booking-spinner" class="loading loading-spinner htmx-indicator"></span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Continue to Payment
+                    </button>
+                    
+                    <div class="alert alert-info mt-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        <span>Your payment will be held securely in escrow until the consultation is completed</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Pricing Info -->
+        <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+                <h3 class="card-title text-lg">
+                    <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Pricing Information
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Base consultation fee: <strong>₹{{ provider.hourly_rate }}/hour</strong>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        30-minute consultation slots
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        100% money-back guarantee if cancelled 24hrs before
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Secure payment via Razorpay
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Razorpay payment integration
+function initiatePayment(bookingId, amountPaise) {
+    fetch('{% url "create_payment_order" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `booking_id=${bookingId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const options = {
+                key: data.key_id,
+                amount: data.amount,
+                currency: data.currency,
+                name: 'Legal Platform',
+                description: 'Consultation Booking',
+                order_id: data.order_id,
+                handler: function(response) {
+                    verifyPayment(response, data.booking_id);
+                },
+                prefill: {
+                    name: data.user_name,
+                    email: data.user_email,
+                    contact: data.user_phone
+                },
+                theme: {
+                    color: '#6366f1'
+                },
+                modal: {
+                    ondismiss: function() {
+                        showAlert('Payment cancelled', 'warning');
+                    }
+                }
+            };
+            
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } else {
+            showAlert(data.error || 'Failed to create payment order', 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Payment initialization failed', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function verifyPayment(response, bookingId) {
+    fetch('{% url "verify_payment" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${response.razorpay_signature}&booking_id=${bookingId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Payment successful! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
+        } else {
+            showAlert(data.error || 'Payment verification failed', 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Payment verification failed', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} fixed top-4 right-4 z-50 max-w-md animate-fade-in`;
+    alertDiv.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

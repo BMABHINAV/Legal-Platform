@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Judge Simulator - Case Predictor - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-primary-50/50 via-white to-purple-50/30 py-12">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-primary-100 to-purple-100 text-primary-700 rounded-full text-sm font-semibold mb-6 shadow-sm">
+                    <span class="text-xl">⚖️</span>
+                    AI-Powered Analysis
+                    <span class="px-2 py-0.5 bg-primary-600 text-white rounded-full text-xs">BETA</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    AI <span class="bg-gradient-to-r from-primary-600 to-accent bg-clip-text text-transparent">Judge</span> Simulator
+                </h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Get an AI-powered prediction of your case outcome based on Indian legal precedents.
+                    Our system analyzes Supreme Court and High Court judgments to estimate your chances.
+                </p>
+                <div id="ai-provider-badge" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm rounded-full shadow-lg shadow-green-500/25">
+                    <span class="animate-pulse">⚡</span>
+                    <span>Powered by Llama 3.1 (Groq)</span>
+                    <span class="bg-white/20 px-2 py-0.5 rounded text-xs">Ultra-Fast</span>
+                </div>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Input Form -->
+                <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-gray-200/50 p-8 border border-white">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent rounded-xl flex items-center justify-center">
+                            <span class="text-xl">📝</span>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">Enter Case Details</h2>
+                    </div>
+                    
+                    <form id="prediction-form" class="space-y-6">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Case Type</label>
+                            <div class="relative">
+                                <select id="case-type" required class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-gray-50 focus:bg-white transition-all appearance-none cursor-pointer">
+                                    <option value="">Select case type...</option>
+                                    <option value="criminal">🚨 Criminal Case</option>
+                                    <option value="civil">📋 Civil Dispute</option>
+                                    <option value="family">👨‍👩‍👧 Family Matter</option>
+                                    <option value="property">🏠 Property Dispute</option>
+                                    <option value="consumer">🛒 Consumer Complaint</option>
+                                    <option value="labor">💼 Labor/Employment</option>
+                                    <option value="constitutional">📜 Constitutional Matter</option>
+                                    <option value="corporate">🏢 Corporate/Commercial</option>
+                                </select>
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Case Facts</label>
+                            <textarea id="case-facts" rows="8" required
+                                      placeholder="Describe the facts of your case in detail. Include relevant dates, parties involved, key events, and any evidence you have..." class="w-full px-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 bg-gray-50 focus:bg-white transition-all resize-none"></textarea>
+                            <p class="text-sm text-gray-500 mt-2 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                The more details you provide, the better the prediction.
+                            </p>
+                        </div>
+                        
+                        <button type="submit" id="submit-btn" class="group w-full py-4 bg-gradient-to-r from-primary-600 via-purple-600 to-accent text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-primary-500/30 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-3">
+                            <span class="text-2xl">🔮</span>
+                            Predict Outcome
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </button>
+                    </form>
+                    
+                    <div class="mt-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                        <span class="text-xl">⚠️</span>
+                        <p class="text-amber-700 text-sm">
+                            <strong>Disclaimer:</strong> This is an AI prediction and not legal advice. 
+                            Always consult a qualified lawyer for your specific case.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Results -->
+                <div id="results-container" class="hidden reveal" style="animation-delay: 200ms;">
+                    <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-gray-200/50 p-8 border border-white">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                                <span class="text-xl">📊</span>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-900">Prediction Results</h2>
+                        </div>
+                        
+                        <!-- Win Probability -->
+                        <div class="text-center mb-8">
+                            <div class="relative inline-flex items-center justify-center w-44 h-44 rounded-full bg-gradient-to-br from-primary-100 to-accent/20 mb-4 shadow-lg">
+                                <div class="absolute inset-2 rounded-full bg-white shadow-inner"></div>
+                                <div class="relative text-center z-10">
+                                    <span id="win-probability" class="text-5xl font-black bg-gradient-to-r from-primary-600 to-accent bg-clip-text text-transparent">--</span>
+                                    <span class="text-2xl bg-gradient-to-r from-primary-600 to-accent bg-clip-text text-transparent font-bold">%</span>
+                                    <p class="text-sm text-gray-600 mt-1 font-medium">Win Probability</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Supporting Cases -->
+                        <div class="mb-6 bg-green-50 rounded-xl p-4">
+                            <h3 class="font-bold text-green-700 mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center text-white text-xs">✓</span>
+                                Supporting Precedents
+                            </h3>
+                            <div id="supporting-cases" class="space-y-2">
+                                <!-- Filled dynamically -->
+                            </div>
+                        </div>
+                        
+                        <!-- Opposing Cases -->
+                        <div class="mb-6 bg-red-50 rounded-xl p-4">
+                            <h3 class="font-bold text-red-700 mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 bg-red-500 rounded-lg flex items-center justify-center text-white text-xs">!</span>
+                                Challenging Precedents
+                            </h3>
+                            <div id="opposing-cases" class="space-y-2">
+                                <!-- Filled dynamically -->
+                            </div>
+                        </div>
+                        
+                        <!-- Analysis -->
+                        <div class="mb-6">
+                        <h3 class="font-semibold text-gray-900 mb-3">📋 Legal Analysis</h3>
+                        <div id="analysis" class="text-gray-600 bg-gray-50 p-4 rounded-lg">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Recommendations -->
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-3">💡 Recommendations</h3>
+                        <ul id="recommendations" class="space-y-2">
+                            <!-- Filled dynamically -->
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-6 flex gap-4">
+                        <a href="{% url 'providers' %}" class="flex-1 py-3 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition">
+                            Find a Lawyer
+                        </a>
+                        <button onclick="resetForm()" class="flex-1 py-3 border-2 border-gray-300 text-gray-700 text-center rounded-lg font-medium hover:bg-gray-50 transition">
+                            New Prediction
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="loading-container" class="hidden">
+                <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary-100 mb-6">
+                        <div class="animate-spin text-4xl">⚖️</div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Analyzing Case...</h3>
+                    <p class="text-gray-600">
+                        Our AI is searching through thousands of Indian legal precedents to predict your case outcome.
+                    </p>
+                    <div class="mt-6 flex items-center justify-center gap-2">
+                        <div class="w-2 h-2 bg-primary-600 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Previous Predictions -->
+            {% if predictions %}
+            <div class="lg:col-span-2 mt-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Your Previous Predictions</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for pred in predictions %}
+                    <div class="bg-white rounded-xl shadow-sm p-4 border hover:border-primary-300 transition cursor-pointer">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-500">{{ pred.created_at|date:"M d, Y" }}</span>
+                            <span class="text-lg font-bold text-primary-600">{{ pred.win_probability }}%</span>
+                        </div>
+                        <p class="font-medium text-gray-900 capitalize">{{ pred.case_type }}</p>
+                        <p class="text-sm text-gray-600 line-clamp-2">{{ pred.case_facts|truncatewords:20 }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Check AI status on page load
+async function checkAIStatus() {
+    try {
+        const response = await fetch('/api/ai-status/');
+        const data = await response.json();
+        const badge = document.getElementById('ai-provider-badge');
+        if (badge) {
+            if (data.active_provider === 'groq') {
+                badge.innerHTML = `
+                    <span class="animate-pulse">⚡</span>
+                    <span>Powered by Llama 3.1 (Groq)</span>
+                    <span class="bg-white/20 px-2 py-0.5 rounded text-xs">Ultra-Fast</span>
+                `;
+                badge.className = 'mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm rounded-full shadow-lg shadow-green-500/25';
+            } else if (data.active_provider === 'gemini') {
+                badge.innerHTML = `
+                    <span>🤖</span>
+                    <span>Powered by Gemini AI</span>
+                `;
+                badge.className = 'mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm rounded-full shadow-lg shadow-blue-500/25';
+            } else {
+                badge.innerHTML = `
+                    <span>⚠️</span>
+                    <span>AI Not Configured</span>
+                `;
+                badge.className = 'mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-sm rounded-full';
+            }
+        }
+    } catch (error) {
+        console.log('Could not check AI status');
+    }
+}
+checkAIStatus();
+
+document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    {% if not request.user.is_authenticated %}
+    alert('Please log in to use the case predictor');
+    window.location.href = '{% url "login" %}?next={% url "case_predictor" %}';
+    return;
+    {% endif %}
+    
+    const caseType = document.getElementById('case-type').value;
+    const caseFacts = document.getElementById('case-facts').value;
+    
+    if (!caseType || !caseFacts) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    // Show loading
+    document.getElementById('loading-container').classList.remove('hidden');
+    document.getElementById('results-container').classList.add('hidden');
+    document.getElementById('submit-btn').disabled = true;
+    
+    try {
+        const response = await fetch('{% url "predict_case_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                case_type: caseType,
+                case_facts: caseFacts
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Poll for results or show pending message
+            showPendingMessage();
+        } else {
+            throw new Error(data.error || 'Failed to submit');
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error submitting case. Please try again.');
+        document.getElementById('loading-container').classList.add('hidden');
+    } finally {
+        document.getElementById('submit-btn').disabled = false;
+    }
+});
+
+function showPendingMessage() {
+    document.getElementById('loading-container').innerHTML = `
+        <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-100 mb-6">
+                <span class="text-4xl">✓</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Analysis In Progress</h3>
+            <p class="text-gray-600">
+                Your case is being analyzed. You'll receive a notification when the prediction is ready.
+                This usually takes 1-2 minutes.
+            </p>
+            <button onclick="location.reload()" class="mt-6 px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition">
+                Refresh to See Results
+            </button>
+        </div>
+    `;
+}
+
+function showResults(data) {
+    document.getElementById('loading-container').classList.add('hidden');
+    document.getElementById('results-container').classList.remove('hidden');
+    
+    document.getElementById('win-probability').textContent = data.win_probability;
+    document.getElementById('analysis').textContent = data.analysis;
+    
+    // Supporting cases
+    const supportingDiv = document.getElementById('supporting-cases');
+    supportingDiv.innerHTML = data.supporting_cases.map(c => `
+        <div class="bg-green-50 p-3 rounded-lg">
+            <p class="font-medium text-green-800">${c.name}</p>
+            <p class="text-sm text-green-600">${c.citation}</p>
+            <p class="text-sm text-gray-600 mt-1">${c.relevance}</p>
+        </div>
+    `).join('');
+    
+    // Opposing cases
+    const opposingDiv = document.getElementById('opposing-cases');
+    opposingDiv.innerHTML = data.opposing_cases.map(c => `
+        <div class="bg-red-50 p-3 rounded-lg">
+            <p class="font-medium text-red-800">${c.name}</p>
+            <p class="text-sm text-red-600">${c.citation}</p>
+            <p class="text-sm text-gray-600 mt-1">${c.relevance}</p>
+        </div>
+    `).join('');
+    
+    // Recommendations
+    const recsUl = document.getElementById('recommendations');
+    recsUl.innerHTML = data.recommendations.map(r => `
+        <li class="flex items-start gap-2">
+            <span class="text-primary-600">•</span>
+            <span class="text-gray-600">${r}</span>
+        </li>
+    `).join('');
+}
+
+function resetForm() {
+    document.getElementById('prediction-form').reset();
+    document.getElementById('results-container').classList.add('hidden');
+    document.getElementById('loading-container').classList.add('hidden');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load multilingual %}
+
+{% block title %}{% trans "Voice to Text - Vernacular Legal Help" %} - {% trans "Legal Platform" %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium mb-4   ">
+                🎤 <span class="translatable" data-translate="Voice Support">{% trans "Voice Support" %}</span>
+            </span>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4 translatable" data-translate="Voice to Text Legal Help">{% trans "Voice to Text Legal Help" %}</h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto translatable" data-translate="Speak in your language and get legal help. We support Hindi, Tamil, Telugu, Bengali, Marathi, Kannada, and more!">
+                {% trans "Speak in your language and get legal help. We support Hindi, Tamil, Telugu, Bengali, Marathi, Kannada, and more!" %}
+            </p>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <!-- Language Selection -->
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-gray-700 mb-2 translatable" data-translate="Select Your Language">{% trans "Select Your Language" %}</label>
+                <select id="language" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-lg">
+                    <option value="hi-IN" data-lang="hi">🇮🇳 हिंदी (Hindi)</option>
+                    <option value="ta-IN" data-lang="ta">🇮🇳 தமிழ் (Tamil)</option>
+                    <option value="te-IN" data-lang="te">🇮🇳 తెలుగు (Telugu)</option>
+                    <option value="bn-IN" data-lang="bn">🇮🇳 বাংলা (Bengali)</option>
+                    <option value="mr-IN" data-lang="mr">🇮🇳 मराठी (Marathi)</option>
+                    <option value="kn-IN" data-lang="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+                    <option value="gu-IN" data-lang="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
+                    <option value="ml-IN" data-lang="ml">🇮🇳 മലയാളം (Malayalam)</option>
+                    <option value="pa-IN" data-lang="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="or-IN" data-lang="or">🇮🇳 ଓଡ଼ିଆ (Odia)</option>
+                    <option value="en-IN" data-lang="en">🇬🇧 English (India)</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-2 translatable" data-translate="Speech recognition works best in Chrome browser">{% trans "Speech recognition works best in Chrome browser" %}</p>
+            </div>
+            
+            <!-- Recording UI -->
+            <div class="text-center mb-8">
+                <button id="record-btn" class="w-40 h-40 rounded-full bg-gradient-to-br from-primary-500 to-accent hover:scale-105 transition-transform duration-200 focus:outline-none focus:ring-4 focus:ring-primary-300 flex items-center justify-center mx-auto shadow-lg relative overflow-hidden">
+                    <div class="absolute inset-0 bg-white/20 rounded-full scale-0 transition-transform duration-300" id="ripple"></div>
+                    <span id="mic-icon" class="text-6xl text-white relative z-10">🎤</span>
+                </button>
+                <p id="record-status" class="text-gray-600 mt-4 font-medium translatable" data-translate="Tap to start speaking">{% trans "Tap to start speaking" %}</p>
+                
+                <!-- Recording Indicator -->
+                <div id="recording-indicator" class="hidden mt-4">
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                        <span class="text-red-600 font-medium translatable" data-translate="Listening...">{% trans "Listening..." %}</span>
+                    </div>
+                    <div class="flex items-center justify-center gap-1 mt-2" id="sound-waves">
+                        <div class="w-1 h-8 bg-primary-600 rounded-full animate-pulse"></div>
+                        <div class="w-1 h-12 bg-primary-600 rounded-full animate-pulse" style="animation-delay: 0.1s"></div>
+                        <div class="w-1 h-6 bg-primary-600 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                        <div class="w-1 h-10 bg-primary-600 rounded-full animate-pulse" style="animation-delay: 0.3s"></div>
+                        <div class="w-1 h-8 bg-primary-600 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                    </div>
+                </div>
+                
+                <!-- Interim Results (live transcription) -->
+                <div id="interim-result" class="hidden mt-4 p-3 bg-gray-100 rounded-lg text-gray-600 italic min-h-[50px]">
+                </div>
+            </div>
+            
+            <!-- Transcription Result -->
+            <div id="result-section" class="hidden">
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <span class="translatable" data-translate="Your Speech">{% trans "Your Speech" %}</span>
+                        <span id="detected-lang-badge" class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full"></span>
+                    </h3>
+                    <div id="original-text" class="bg-gray-50 p-4 rounded-lg text-gray-700 min-h-[80px] text-lg leading-relaxed">
+                    </div>
+                </div>
+                
+                <!-- AI Response -->
+                <div id="ai-response-section" class="hidden mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        🤖 {% trans "Legal Information" %}
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">AI</span>
+                    </h3>
+                    <div id="ai-response" class="bg-green-50 p-4 rounded-lg text-green-800 leading-relaxed">
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="getAIResponse()" class="flex-1 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition flex items-center justify-center gap-2">
+                        <span>🤖</span>
+                        <span>{% trans "Get Legal Help" %}</span>
+                    </button>
+                    <button onclick="speakResponse()" class="flex-1 py-3 border-2 border-primary-600 text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition flex items-center justify-center gap-2">
+                        <span>🔊</span>
+                        <span>{% trans "Listen Response" %}</span>
+                    </button>
+                    <button onclick="resetRecording()" class="py-3 px-4 border-2 border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition">
+                        🔄
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-2">💡 {% trans "Tips for Better Results" %}</h4>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• {% trans "Speak clearly and at a normal pace" %}</li>
+                    <li>• {% trans "Use a quiet environment for recording" %}</li>
+                    <li>• {% trans "Describe your legal issue in detail" %}</li>
+                    <li>• {% trans "You can mix languages if needed" %}</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Previous Transcriptions -->
+        {% if transcriptions %}
+        <div class="mt-12">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Your Previous Queries</h2>
+            <div class="space-y-4">
+                {% for t in transcriptions %}
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-500">{{ t.created_at|timesince }} ago</span>
+                        <span class="text-xs bg-gray-100 px-2 py-1 rounded">{{ t.language }}</span>
+                    </div>
+                    <p class="text-gray-700 mb-2">{{ t.original_text|truncatewords:30 }}</p>
+                    <p class="text-gray-600 text-sm italic">{{ t.translated_text|truncatewords:30 }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Web Speech API for real-time multilingual voice recognition
+let recognition = null;
+let isRecording = false;
+let finalTranscript = '';
+let interimTranscript = '';
+
+const recordBtn = document.getElementById('record-btn');
+const recordStatus = document.getElementById('record-status');
+const recordingIndicator = document.getElementById('recording-indicator');
+const resultSection = document.getElementById('result-section');
+const interimResult = document.getElementById('interim-result');
+const languageSelect = document.getElementById('language');
+
+// Language names for display
+const languageNames = {
+    'hi-IN': 'हिंदी',
+    'ta-IN': 'தமிழ்',
+    'te-IN': 'తెలుగు',
+    'bn-IN': 'বাংলা',
+    'mr-IN': 'मराठी',
+    'kn-IN': 'ಕನ್ನಡ',
+    'gu-IN': 'ગુજરાતી',
+    'ml-IN': 'മലയാളം',
+    'pa-IN': 'ਪੰਜਾਬੀ',
+    'or-IN': 'ଓଡ଼ିଆ',
+    'en-IN': 'English'
+};
+
+// Check browser support
+if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    recordBtn.disabled = true;
+    recordStatus.innerHTML = '⚠️ {% trans "Voice input not supported. Please use Chrome browser." %}';
+    recordStatus.classList.add('text-red-600');
+}
+
+function initRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = languageSelect.value;
+    
+    recognition.onstart = function() {
+        isRecording = true;
+        recordBtn.style.background = 'linear-gradient(to bottom right, #ef4444, #dc2626)';
+        document.getElementById('mic-icon').textContent = '⏹️';
+        recordStatus.textContent = '{% trans "Listening... Tap to stop" %}';
+        recordingIndicator.classList.remove('hidden');
+        interimResult.classList.remove('hidden');
+        interimResult.textContent = '';
+        finalTranscript = '';
+    };
+    
+    recognition.onend = function() {
+        if (isRecording) {
+            // Restart if accidentally stopped
+            try {
+                recognition.start();
+            } catch (e) {
+                stopRecording();
+            }
+        }
+    };
+    
+    recognition.onresult = function(event) {
+        interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+        
+        // Show interim results
+        interimResult.innerHTML = `
+            <span class="text-gray-800">${finalTranscript}</span>
+            <span class="text-gray-400 italic">${interimTranscript}</span>
+        `;
+    };
+    
+    recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'no-speech') {
+            recordStatus.textContent = '{% trans "No speech detected. Try again." %}';
+        } else if (event.error === 'audio-capture') {
+            recordStatus.textContent = '{% trans "Microphone not found." %}';
+        } else if (event.error === 'not-allowed') {
+            recordStatus.textContent = '{% trans "Microphone access denied." %}';
+        }
+        stopRecording();
+    };
+    
+    return recognition;
+}
+
+function startRecording() {
+    finalTranscript = '';
+    recognition = initRecognition();
+    recognition.lang = languageSelect.value;
+    
+    try {
+        recognition.start();
+    } catch (e) {
+        console.error('Error starting recognition:', e);
+    }
+}
+
+function stopRecording() {
+    isRecording = false;
+    if (recognition) {
+        recognition.stop();
+    }
+    
+    recordBtn.style.background = '';
+    document.getElementById('mic-icon').textContent = '🎤';
+    recordStatus.textContent = '{% trans "Tap to start speaking" %}';
+    recordingIndicator.classList.add('hidden');
+    interimResult.classList.add('hidden');
+    
+    // Show results if we have any
+    if (finalTranscript.trim()) {
+        showResults(finalTranscript.trim());
+    }
+}
+
+recordBtn.addEventListener('click', function() {
+    if (!isRecording) {
+        startRecording();
+    } else {
+        stopRecording();
+    }
+});
+
+// Update recognition language when selection changes
+languageSelect.addEventListener('change', function() {
+    if (recognition && isRecording) {
+        recognition.lang = this.value;
+        // Restart with new language
+        recognition.stop();
+        setTimeout(() => {
+            startRecording();
+        }, 100);
+    }
+});
+
+function showResults(text) {
+    document.getElementById('original-text').textContent = text;
+    const langCode = languageSelect.value;
+    document.getElementById('detected-lang-badge').textContent = languageNames[langCode] || langCode;
+    resultSection.classList.remove('hidden');
+    
+    // Scroll to results
+    resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetRecording() {
+    finalTranscript = '';
+    interimTranscript = '';
+    document.getElementById('original-text').textContent = '';
+    document.getElementById('ai-response').textContent = '';
+    document.getElementById('ai-response-section').classList.add('hidden');
+    resultSection.classList.add('hidden');
+}
+
+async function getAIResponse() {
+    const query = document.getElementById('original-text').textContent;
+    const langCode = languageSelect.selectedOptions[0].dataset.lang || 'en';
+    
+    if (!query.trim()) {
+        alert('{% trans "Please record your question first" %}');
+        return;
+    }
+    
+    const aiResponseSection = document.getElementById('ai-response-section');
+    const aiResponse = document.getElementById('ai-response');
+    
+    aiResponse.innerHTML = '<div class="flex items-center gap-2"><div class="loading loading-spinner loading-sm"></div> {% trans "Getting legal help..." %}</div>';
+    aiResponseSection.classList.remove('hidden');
+    
+    try {
+        const response = await fetch('{% url "chat_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ 
+                message: query,
+                history: [],
+                lang_code: langCode
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            aiResponse.textContent = data.text;
+        } else {
+            aiResponse.innerHTML = `<span class="text-red-600">{% trans "Error" %}: ${data.error}</span>`;
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        aiResponse.innerHTML = '<span class="text-red-600">{% trans "Error getting response" %}</span>';
+    }
+}
+
+function speakResponse() {
+    const aiResponse = document.getElementById('ai-response').textContent;
+    const language = languageSelect.value;
+    
+    if (!aiResponse || aiResponse.includes('Getting legal help')) {
+        // Speak original text if no AI response
+        speakText(document.getElementById('original-text').textContent, language);
+    } else {
+        speakText(aiResponse, language);
+    }
+}
+
+function speakText(text, language) {
+    if ('speechSynthesis' in window) {
+        // Cancel any ongoing speech
+        speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = language;
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        
+        // Try to find a voice for the language
+        const voices = speechSynthesis.getVoices();
+        const langVoice = voices.find(v => v.lang.startsWith(language.split('-')[0]));
+        if (langVoice) {
+            utterance.voice = langVoice;
+        }
+        
+        speechSynthesis.speak(utterance);
+    } else {
+        alert('{% trans "Text-to-speech not supported in this browser" %}');
+    }
+}
+
+// Load voices when available
+if ('speechSynthesis' in window) {
+    speechSynthesis.onvoiceschanged = function() {
+        // Voices loaded
+    };
+}
+</script>
+{% endblock %}

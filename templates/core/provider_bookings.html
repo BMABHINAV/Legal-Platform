@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Bookings - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">Manage Bookings</h1>
+                <p class="text-base-content/70 mt-1">View and manage client consultation requests</p>
+            </div>
+            <div class="flex gap-2 mt-4 md:mt-0">
+                <a href="{% url 'provider_dashboard' %}" class="btn btn-ghost gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                <a href="{% url 'provider_availability_manage' %}" class="btn btn-primary gap-2 btn-glow">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Manage Availability
+                </a>
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 ">
+            <div class="stat bg-base-100 rounded-xl shadow ">
+                <div class="stat-figure text-warning">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="stat-title">Pending</div>
+                <div class="stat-value text-warning" data-countup>{{ pending_count }}</div>
+            </div>
+            <div class="stat bg-base-100 rounded-xl shadow ">
+                <div class="stat-figure text-success">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="stat-title">Completed</div>
+                <div class="stat-value text-success" data-countup>{{ completed_count }}</div>
+            </div>
+            <div class="stat bg-base-100 rounded-xl shadow ">
+                <div class="stat-figure text-info">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div class="stat-title">Total Clients</div>
+                <div class="stat-value" data-countup>{{ bookings.count }}</div>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="flex gap-2 mb-6 flex-wrap">
+            <a href="{% url 'provider_bookings' %}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-ghost{% endif %}">All</a>
+            <a href="{% url 'provider_bookings' %}?status=pending" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-ghost{% endif %}">Pending</a>
+            <a href="{% url 'provider_bookings' %}?status=confirmed" class="btn btn-sm {% if status_filter == 'confirmed' %}btn-primary{% else %}btn-ghost{% endif %}">Confirmed</a>
+            <a href="{% url 'provider_bookings' %}?status=accepted" class="btn btn-sm {% if status_filter == 'accepted' %}btn-primary{% else %}btn-ghost{% endif %}">Accepted</a>
+            <a href="{% url 'provider_bookings' %}?status=completed" class="btn btn-sm {% if status_filter == 'completed' %}btn-primary{% else %}btn-ghost{% endif %}">Completed</a>
+        </div>
+        
+        <!-- Bookings Table -->
+        {% if bookings %}
+        <div class="overflow-x-auto">
+            <table class="table bg-base-100 shadow-lg rounded-xl">
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>Date & Time</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr class="hover">
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="avatar placeholder">
+                                    <div class="w-10 bg-primary text-primary-content rounded-full">
+                                        <span>{{ booking.user.first_name|slice:":1" }}{{ booking.user.last_name|slice:":1" }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold">{{ booking.user.get_full_name }}</div>
+                                    <div class="text-sm opacity-50">{{ booking.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if booking.scheduled_date %}
+                                <div class="font-medium">{{ booking.scheduled_date|date:"M d, Y" }}</div>
+                                <div class="text-sm opacity-70">{{ booking.scheduled_time|time:"g:i A" }}</div>
+                            {% else %}
+                                {{ booking.scheduled_at|date:"M d, Y g:i A" }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-outline capitalize">{{ booking.consultation_type }}</span>
+                        </td>
+                        <td class="font-medium">₹{{ booking.amount }}</td>
+                        <td>
+                            {% if booking.status == 'completed' %}
+                                <span class="badge badge-success">Completed</span>
+                            {% elif booking.status == 'confirmed' %}
+                                <span class="badge badge-success">Confirmed</span>
+                            {% elif booking.status == 'accepted' %}
+                                <span class="badge badge-info">Accepted</span>
+                            {% elif booking.status == 'pending' %}
+                                <span class="badge badge-warning">Pending</span>
+                            {% elif booking.status == 'payment_pending' %}
+                                <span class="badge badge-secondary">Payment Pending</span>
+                            {% elif booking.status == 'cancelled' %}
+                                <span class="badge badge-error">Cancelled</span>
+                            {% elif booking.status == 'in-progress' %}
+                                <span class="badge badge-primary animate-pulse">In Progress</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                {% if booking.status == 'confirmed' %}
+                                    <button class="btn btn-success btn-sm" onclick="acceptBooking('{{ booking.id }}')">
+                                        Accept
+                                    </button>
+                                {% endif %}
+                                {% if booking.status == 'accepted' or booking.status == 'in-progress' %}
+                                    <button class="btn btn-primary btn-sm" onclick="document.getElementById('join-modal-{{ booking.id }}').showModal()">
+                                        Start
+                                    </button>
+                                    <button class="btn btn-success btn-sm" onclick="completeBooking('{{ booking.id }}')">
+                                        Complete
+                                    </button>
+                                {% endif %}
+                                <a href="{% url 'booking_detail' booking.id %}" class="btn btn-ghost btn-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body items-center text-center py-12">
+                <svg class="w-16 h-16 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <h3 class="text-xl font-semibold mt-4">No bookings yet</h3>
+                <p class="text-base-content/70 mt-2">You'll see client bookings here once they start coming in</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function acceptBooking(bookingId) {
+    fetch(`/api/booking/${bookingId}/accept/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Failed to accept booking');
+        }
+    });
+}
+
+function completeBooking(bookingId) {
+    if (!confirm('Are you sure you want to mark this booking as completed?')) return;
+    
+    fetch(`/api/booking/${bookingId}/complete/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Failed to complete booking');
+        }
+    });
+}
+</script>
+{% endblock %}

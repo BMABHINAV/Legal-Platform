@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}My Favorite Lawyers - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">My Favorite Lawyers</h1>
+                <p class="text-base-content/70 mt-1">Quick access to lawyers you've saved</p>
+            </div>
+            <a href="{% url 'providers' %}" class="btn btn-primary mt-4 md:mt-0 gap-2 btn-glow">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                Find More Lawyers
+            </a>
+        </div>
+        
+        <!-- Favorites Grid -->
+        {% if providers %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
+            {% for provider in providers %}
+            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 ">
+                <div class="card-body">
+                    <!-- Provider Header -->
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="avatar placeholder">
+                                <div class="w-14 bg-gradient-to-br from-primary to-secondary text-primary-content rounded-full">
+                                    <span class="text-xl font-bold">{{ provider.name|slice:":1" }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">{{ provider.name }}</h3>
+                                <p class="text-sm text-base-content/70 capitalize">{{ provider.provider_type }}</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-ghost btn-circle text-error"
+                            onclick="toggleFavorite('{{ provider.id }}')"
+                            id="fav-btn-{{ provider.id }}"
+                        >
+                            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Rating -->
+                    <div class="flex items-center gap-2 mt-2">
+                        <div class="rating rating-sm">
+                            {% for i in "12345" %}
+                            <input type="radio" class="mask mask-star-2 bg-warning" disabled {% if forloop.counter <= provider.rating %}checked{% endif %} />
+                            {% endfor %}
+                        </div>
+                        <span class="text-sm font-medium">{{ provider.rating }}</span>
+                        <span class="text-sm text-base-content/50">({{ provider.reviews_count }} reviews)</span>
+                    </div>
+                    
+                    <!-- Specializations -->
+                    <div class="flex flex-wrap gap-1 mt-2">
+                        {% for spec in provider.specializations|slice:":3" %}
+                        <span class="badge badge-outline badge-sm">{{ spec }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Info -->
+                    <div class="grid grid-cols-2 gap-2 mt-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-base-content/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>{{ provider.years_of_experience }} yrs exp</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-base-content/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                            <span>{{ provider.location }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Price & Actions -->
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-base-200">
+                        <div>
+                            <span class="text-lg font-bold text-primary">₹{{ provider.hourly_rate }}</span>
+                            <span class="text-sm text-base-content/50">/hr</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="{% url 'provider_detail' provider.id %}" class="btn btn-ghost btn-sm">View Profile</a>
+                            <a href="{% url 'booking_create' provider.id %}" class="btn btn-primary btn-sm">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body items-center text-center py-16">
+                <svg class="w-20 h-20 text-base-content/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                <h3 class="text-2xl font-semibold mt-6">No favorites yet</h3>
+                <p class="text-base-content/70 mt-2 max-w-md">
+                    Start exploring lawyers and tap the heart icon to save them to your favorites for quick access.
+                </p>
+                <a href="{% url 'providers' %}" class="btn btn-primary btn-lg mt-6 gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    Explore Lawyers
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function toggleFavorite(providerId) {
+    fetch(`/api/provider/${providerId}/favorite/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && !data.is_favorite) {
+            // Removed from favorites - reload page
+            location.reload();
+        }
+    });
+}
+</script>
+{% endblock %}

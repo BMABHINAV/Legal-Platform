@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Triage Results - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-10 animate-fade-in">
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-4  ">
+                ✓ Matching Complete
+            </span>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Recommended Legal Experts</h1>
+            <p class="text-gray-600">
+                Based on your responses, we've found these 
+                <span class="font-medium capitalize">{{ category }}</span> law specialists for you.
+            </p>
+        </div>
+        
+        {% if providers %}
+        <div class="space-y-6 ">
+            {% for provider in providers %}
+            <div class="bg-white rounded-xl shadow-sm p-6 border hover:border-primary-200 transition ">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-2xl font-bold text-primary-600">{{ provider.name|slice:":1" }}</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-2">
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-900">{{ provider.name }}</h3>
+                                <p class="text-gray-600 capitalize">{{ provider.provider_type }}</p>
+                            </div>
+                            <span class="px-3 py-1 {{ provider.tier.badge_class }} rounded-full text-xs font-medium">
+                                {{ provider.tier.name }}
+                            </span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4 mb-4 text-sm">
+                            <div class="flex items-center gap-1">
+                                <span class="text-yellow-500">★</span>
+                                <span class="font-medium">{{ provider.rating }}</span>
+                                <span class="text-gray-500">({{ provider.review_count }} reviews)</span>
+                            </div>
+                            <span class="text-gray-600">{{ provider.years_of_experience }} years exp</span>
+                            <span class="text-gray-600">📍 {{ provider.city }}</span>
+                            {% if provider.hourly_rate %}
+                            <span class="text-gray-900 font-medium">₹{{ provider.hourly_rate }}/hr</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="text-gray-600 text-sm mb-4">{{ provider.bio }}</p>
+                        
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            {% for spec in provider.specializations %}
+                            <span class="px-2 py-1 bg-primary-50 text-primary-700 rounded text-xs capitalize">{{ spec }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <a href="{% url 'provider_detail' provider.id %}" class="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 transition">
+                                View Profile
+                            </a>
+                            <a href="{% url 'booking_create' provider.id %}" class="px-4 py-2 border border-primary-600 text-primary-600 rounded-lg text-sm hover:bg-primary-50 transition">
+                                Book Consultation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 bg-white rounded-xl">
+            <p class="text-gray-600 mb-4">No providers found for this category.</p>
+            <a href="{% url 'providers' %}" class="text-primary-600 hover:text-primary-700">
+                Browse all providers →
+            </a>
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-8">
+            <a href="{% url 'providers' %}" class="text-primary-600 font-medium hover:text-primary-700">
+                View All Providers →
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

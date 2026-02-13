@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900" style="color: #111827 !important; -webkit-text-fill-color: #111827 !important;">Admin Dashboard</h1>
+        <p class="text-gray-600" style="color: #4b5563 !important; -webkit-text-fill-color: #4b5563 !important;">Platform overview and management</p>
+    </div>
+    
+    <!-- Stats -->
+    <div class="grid md:grid-cols-3 gap-6 mb-8 ">
+        <div class="bg-white rounded-xl p-6 shadow-sm ">
+            <p class="text-gray-600 text-sm mb-1">Total Users</p>
+            <p class="text-3xl font-bold text-primary-600" data-countup>{{ total_users }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm ">
+            <p class="text-gray-600 text-sm mb-1">Total Providers</p>
+            <p class="text-3xl font-bold text-green-600" data-countup>{{ total_providers }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm ">
+            <p class="text-gray-600 text-sm mb-1">Document Analyses</p>
+            <p class="text-3xl font-bold text-blue-600" data-countup>{{ total_analyses }}</p>
+        </div>
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+            <a href="/admin/" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                <span class="text-2xl mb-2 block">⚙️</span>
+                <span class="font-medium">Django Admin</span>
+            </a>
+            <a href="{% url 'providers' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                <span class="text-2xl mb-2 block">👨‍⚖️</span>
+                <span class="font-medium">View Providers</span>
+            </a>
+            <a href="{% url 'leaderboard' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                <span class="text-2xl mb-2 block">🏆</span>
+                <span class="font-medium">Leaderboard</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

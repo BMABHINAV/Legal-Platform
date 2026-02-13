@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load multilingual %}
+
+{% block title %}{% trans "Crowdfunding" %} - {% trans "Pro Bono Legal Aid" %} - {% trans "Legal Platform" %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <span class="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium mb-4">
+            ❤️ <span class="translatable" data-translate="Crowd-Justice Initiative">{% trans "Crowd-Justice Initiative" %}</span>
+        </span>
+        <h1 class="text-4xl font-bold text-gray-900 mb-4 translatable" data-translate="Legal Aid Crowdfunding">{% trans "Legal Aid Crowdfunding" %}</h1>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto translatable" data-translate="Help citizens who can't afford legal representation. Fund public interest cases and support justice for all.">
+            {% trans "Help citizens who can't afford legal representation. Fund public interest cases and support justice for all." %}
+        </p>
+    </div>
+    
+    <!-- Stats -->
+    <div class="grid md:grid-cols-3 gap-6 mb-12 ">
+        <div class="bg-white rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all">
+            <p class="text-4xl font-bold text-primary-600 mb-2"><span data-countup="{{ campaigns.count }}">{{ campaigns.count }}</span></p>
+            <p class="text-gray-600 translatable" data-translate="Active Campaigns">{% trans "Active Campaigns" %}</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all">
+            <p class="text-4xl font-bold text-green-600 mb-2">₹12.5L</p>
+            <p class="text-gray-600 translatable" data-translate="Total Raised">{% trans "Total Raised" %}</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all">
+            <p class="text-4xl font-bold text-accent mb-2"><span data-countup="45" data-countup-suffix="+">45+</span></p>
+            <p class="text-gray-600 translatable" data-translate="Cases Funded">{% trans "Cases Funded" %}</p>
+        </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="flex justify-center gap-4 mb-12">
+        <a href="{% url 'crowdfunding_create' %}" class="btn-glow px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition translatable" data-translate="Start a Campaign">
+            {% trans "Start a Campaign" %}
+        </a>
+        <a href="#campaigns" class="btn-glow px-6 py-3 border-2 border-primary-600 text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition translatable" data-translate="Browse Campaigns">
+            {% trans "Browse Campaigns" %}
+        </a>
+    </div>
+    
+    <!-- How It Works -->
+    <div class="bg-gray-50 rounded-2xl p-8 mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 text-center mb-8 translatable" data-translate="How Crowd-Justice Works">{% trans "How Crowd-Justice Works" %}</h2>
+        <div class="grid md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">📝</div>
+                <h3 class="font-semibold text-gray-900 mb-2 translatable" data-translate="Submit Case">{% trans "Submit Case" %}</h3>
+                <p class="text-gray-600 text-sm translatable" data-translate="User submits their case details and income proof">{% trans "User submits their case details and income proof" %}</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">✅</div>
+                <h3 class="font-semibold text-gray-900 mb-2 translatable" data-translate="Verification">{% trans "Verification" %}</h3>
+                <p class="text-gray-600 text-sm translatable" data-translate="Our team verifies the case and eligibility">{% trans "Our team verifies the case and eligibility" %}</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">💰</div>
+                <h3 class="font-semibold text-gray-900 mb-2 translatable" data-translate="Crowdfund">{% trans "Crowdfund" %}</h3>
+                <p class="text-gray-600 text-sm translatable" data-translate="Public and NGOs donate to fund legal fees">{% trans "Public and NGOs donate to fund legal fees" %}</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">⚖️</div>
+                <h3 class="font-semibold text-gray-900 mb-2 translatable" data-translate="Justice">{% trans "Justice" %}</h3>
+                <p class="text-gray-600 text-sm translatable" data-translate="Pro-bono lawyers take the case (2x incentive points!)">{% trans "Pro-bono lawyers take the case (2x incentive points!)" %}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Campaigns List -->
+    <div id="campaigns">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 translatable" data-translate="Active Campaigns">{% trans "Active Campaigns" %}</h2>
+        
+        {% if campaigns %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for campaign in campaigns %}
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition">
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-medium capitalize">
+                            {{ campaign.case_type }}
+                        </span>
+                        {% if campaign.is_verified %}
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                            ✓ Verified
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="font-bold text-gray-900 text-lg mb-2">{{ campaign.title }}</h3>
+                    <p class="text-gray-600 text-sm line-clamp-3 mb-4">{{ campaign.description }}</p>
+                    
+                    <!-- Progress -->
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="font-medium text-gray-900">₹{{ campaign.raised_amount }}</span>
+                            <span class="text-gray-500">of ₹{{ campaign.target_amount }}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-primary-600 h-2 rounded-full" style="width: {{ campaign.funding_progress }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500">{{ campaign.donations.count }} donors</span>
+                        <a href="{% url 'crowdfunding_detail' campaign.id %}" class="text-primary-600 font-medium hover:text-primary-700">
+                            View & Donate →
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 bg-white rounded-xl">
+            <p class="text-gray-600 mb-4">No active campaigns at the moment.</p>
+            <a href="{% url 'crowdfunding_create' %}" class="text-primary-600 hover:text-primary-700">
+                Be the first to start a campaign →
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- For Lawyers -->
+    <div class="bg-gradient-to-br from-primary-600 to-accent rounded-2xl p-8 mt-12 text-white">
+        <div class="max-w-2xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-4">Are You a Lawyer?</h2>
+            <p class="text-white/90 mb-6">
+                Take up pro-bono cases from funded campaigns and earn 
+                <span class="font-bold">DOUBLE incentive points</span>! 
+                Fast-track your way to Platinum tier while making a difference.
+            </p>
+            <a href="{% url 'providers' %}" class="inline-block px-6 py-3 bg-white text-primary-600 rounded-lg font-medium hover:bg-gray-100 transition">
+                Browse Pro Bono Cases
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

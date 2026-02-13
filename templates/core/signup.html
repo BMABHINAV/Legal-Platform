@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load multilingual %}
+
+{% block title %}{% trans "Sign Up" %} - {% trans "Legal Platform" %}{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 relative overflow-hidden">
+    <!-- Background decorations -->
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
+    <div class="absolute top-20 right-10 w-72 h-72 bg-indigo-200/30 rounded-full blur-3xl "></div>
+    <div class="absolute bottom-20 left-10 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl "></div>
+    
+    <div class="max-w-md w-full relative z-10">
+        <div class="text-center mb-8">
+            <div class="inline-block text-5xl mb-4  ">⚖️</div>
+            <h1 class="text-2xl font-bold mb-2 translatable" data-translate="Create Account">{% trans "Create Account" %}</h1>
+            <p class="opacity-60 translatable" data-translate="Join our legal services platform">{% trans "Join our legal services platform" %}</p>
+        </div>
+        
+        <div class="card bg-base-100 shadow-2xl">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error mb-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="space-y-4">
+                        <!-- Name Fields -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label" for="id_first_name">
+                                    <span class="label-text translatable" data-translate="First Name">{% trans "First Name" %}</span>
+                                </label>
+                                <input type="text" name="first_name" id="id_first_name" class="input input-bordered {% if form.first_name.errors %}input-error{% endif %}"
+                                       value="{{ form.first_name.value|default:'' }}"
+                                       placeholder="{% trans 'John' %}" required>
+                                {% if form.first_name.errors %}
+                                <label class="label"><span class="label-text-alt text-error">{{ form.first_name.errors.0 }}</span></label>
+                                {% endif %}
+                            </div>
+                            <div class="form-control">
+                                <label class="label" for="id_last_name">
+                                    <span class="label-text translatable" data-translate="Last Name">{% trans "Last Name" %}</span>
+                                </label>
+                                <input type="text" name="last_name" id="id_last_name" class="input input-bordered {% if form.last_name.errors %}input-error{% endif %}"
+                                       value="{{ form.last_name.value|default:'' }}"
+                                       placeholder="{% trans 'Doe' %}" required>
+                                {% if form.last_name.errors %}
+                                <label class="label"><span class="label-text-alt text-error">{{ form.last_name.errors.0 }}</span></label>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Username -->
+                        <div class="form-control">
+                            <label class="label" for="id_username">
+                                <span class="label-text translatable" data-translate="Username">{% trans "Username" %}</span>
+                            </label>
+                            <div class="join w-full">
+                                <span class="join-item btn btn-ghost pointer-events-none">👤</span>
+                                <input type="text" name="username" id="id_username" class="input input-bordered join-item flex-1 {% if form.username.errors %}input-error{% endif %}"
+                                       value="{{ form.username.value|default:'' }}"
+                                       placeholder="{% trans 'johndoe' %}" required>
+                            </div>
+                            {% if form.username.errors %}
+                            <label class="label"><span class="label-text-alt text-error">{{ form.username.errors.0 }}</span></label>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="form-control">
+                            <label class="label" for="id_email">
+                                <span class="label-text translatable" data-translate="Email">{% trans "Email" %}</span>
+                            </label>
+                            <div class="join w-full">
+                                <span class="join-item btn btn-ghost pointer-events-none">📧</span>
+                                <input type="email" name="email" id="id_email" class="input input-bordered join-item flex-1 {% if form.email.errors %}input-error{% endif %}"
+                                       value="{{ form.email.value|default:'' }}"
+                                       placeholder="{% trans 'john@example.com' %}" required>
+                            </div>
+                            {% if form.email.errors %}
+                            <label class="label"><span class="label-text-alt text-error">{{ form.email.errors.0 }}</span></label>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Phone (optional) -->
+                        <div class="form-control">
+                            <label class="label" for="id_phone">
+                                <span class="label-text"><span class="translatable" data-translate="Phone">{% trans "Phone" %}</span> <span class="opacity-50 translatable" data-translate="(optional)">{% trans "(optional)" %}</span></span>
+                            </label>
+                            <div class="join w-full">
+                                <span class="join-item btn btn-ghost pointer-events-none">📱</span>
+                                <input type="tel" name="phone" id="id_phone" class="input input-bordered join-item flex-1 {% if form.phone.errors %}input-error{% endif %}"
+                                       value="{{ form.phone.value|default:'' }}"
+                                       placeholder="+91 98765 43210">
+                            </div>
+                            {% if form.phone.errors %}
+                            <label class="label"><span class="label-text-alt text-error">{{ form.phone.errors.0 }}</span></label>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Password -->
+                        <div class="form-control">
+                            <label class="label" for="id_password1">
+                                <span class="label-text translatable" data-translate="Password">{% trans "Password" %}</span>
+                            </label>
+                            <div class="join w-full">
+                                <span class="join-item btn btn-ghost pointer-events-none">🔒</span>
+                                <input type="password" name="password1" id="id_password1" class="input input-bordered join-item flex-1 {% if form.password1.errors %}input-error{% endif %}"
+                                       placeholder="••••••••" required>
+                            </div>
+                            {% if form.password1.errors %}
+                            <label class="label"><span class="label-text-alt text-error">{{ form.password1.errors.0 }}</span></label>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Confirm Password -->
+                        <div class="form-control">
+                            <label class="label" for="id_password2">
+                                <span class="label-text translatable" data-translate="Confirm Password">{% trans "Confirm Password" %}</span>
+                            </label>
+                            <div class="join w-full">
+                                <span class="join-item btn btn-ghost pointer-events-none">🔒</span>
+                                <input type="password" name="password2" id="id_password2" class="input input-bordered join-item flex-1 {% if form.password2.errors %}input-error{% endif %}"
+                                       placeholder="••••••••" required>
+                            </div>
+                            {% if form.password2.errors %}
+                            <label class="label"><span class="label-text-alt text-error">{{ form.password2.errors.0 }}</span></label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block mt-6 gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                        <span class="translatable" data-translate="Create Account">{% trans "Create Account" %}</span>
+                    </button>
+                </form>
+                
+                <div class="divider translatable" data-translate="OR">{% trans "OR" %}</div>
+                
+                <p class="text-center">
+                    <span class="translatable" data-translate="Already have an account?">{% trans "Already have an account?" %}</span>
+                    <a href="{% url 'login' %}" class="link link-primary font-medium translatable" data-translate="Sign In">{% trans "Sign In" %}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

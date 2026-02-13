@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load multilingual %}
+
+{% block title %}{% trans "Legal Platform - Connect with Verified Legal Professionals" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Floating animation */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    @keyframes float-reverse {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(20px) rotate(-5deg); }
+    }
+    @keyframes gradient-shift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    .float-slow { animation: float 6s ease-in-out infinite; }
+    .float-medium { animation: float 4s ease-in-out infinite; }
+    .float-reverse { animation: float-reverse 5s ease-in-out infinite; }
+    
+    /* Gradient text - ONLY for .gradient-text elements */
+    .gradient-text {
+        color: #fbbf24;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b, #fcd34d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Animated gradient background */
+    .animated-gradient {
+        background: linear-gradient(-45deg, #4f46e5, #7c3aed, #6366f1, #8b5cf6);
+        background-size: 400% 400%;
+        animation: gradient-shift 15s ease infinite;
+    }
+    
+    /* Card hover effects */
+    .hover-lift { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .hover-lift:hover { transform: translateY(-8px); }
+    
+    /* Glow effect */
+    .glow-effect {
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative animated-gradient min-h-[90vh] flex items-center overflow-hidden">
+    <!-- Animated background elements -->
+    <div class="absolute inset-0 overflow-hidden">
+        <!-- Grid pattern -->
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M0 0h60v60H0z%22 fill=%22none%22/%3E%3Cpath d=%22M30 0v60M0 30h60%22 stroke=%22rgba(255,255,255,0.05)%22 stroke-width=%221%22/%3E%3C/svg%3E')]"></div>
+        
+        <!-- Floating blobs -->
+        <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl float-slow"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl float-reverse"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl"></div>
+        
+        <!-- Floating icons with 3D effect -->
+        <div class="hidden lg:block absolute top-32 left-20 text-6xl opacity-20 float-3d">⚖️</div>
+        <div class="hidden lg:block absolute top-40 right-32 text-5xl opacity-15 float-3d" style="animation-delay: -2s;">📜</div>
+        <div class="hidden lg:block absolute bottom-40 left-32 text-5xl opacity-15 float-3d" style="animation-delay: -4s;">🏛️</div>
+        <div class="hidden lg:block absolute bottom-32 right-20 text-6xl opacity-20 float-3d" style="animation-delay: -6s;">📚</div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+        <div class="text-center">
+            <!-- Badge -->
+            <div class="scroll-reveal inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-md rounded-full mb-8 border border-white/20 shadow-lg">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-400"></span>
+                </span>
+                <span class="text-white text-sm font-medium">{% trans "AI-Powered Legal Solutions" %}</span>
+                <span class="px-2 py-0.5 bg-yellow-400/20 text-yellow-300 text-xs rounded-full font-semibold animate-pulse">NEW</span>
+            </div>
+            
+            <!-- Main Heading -->
+            <h1 class="scroll-reveal stagger-1 text-5xl md:text-6xl lg:text-8xl font-bold text-white mb-8 leading-tight tracking-tight">
+                <span>{% trans "Access" %}</span>
+                <span class="gradient-text">{% trans "Justice" %}</span>
+                <br>
+                <span class="text-white/90">{% trans "Made Simple" %}</span>
+            </h1>
+            
+            <!-- Subtitle -->
+            <p class="scroll-reveal stagger-2 text-lg md:text-xl lg:text-2xl text-indigo-100 max-w-3xl mx-auto mb-12 leading-relaxed">
+                {% trans "Connect with verified advocates, mediators, and legal experts." %}
+                <br class="hidden md:block">
+                {% trans "Get AI-powered document analysis and instant legal guidance." %}
+            </p>
+            
+            <!-- CTA Buttons -->
+            <div class="scroll-reveal stagger-3 flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                <a href="{% url 'providers' %}" class="card-3d group inline-flex items-center justify-center gap-3 px-10 py-5 bg-white text-indigo-700 rounded-2xl font-bold text-lg hover:bg-indigo-50 transition-all shadow-2xl shadow-black/20 glow-effect">
+                    <span>{% trans "Find a Lawyer" %}</span>
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </a>
+                <a href="{% url 'document_analyzer' %}" class="card-3d group inline-flex items-center justify-center gap-3 px-10 py-5 bg-white/10 backdrop-blur-sm text-white rounded-2xl font-bold text-lg border-2 border-white/30 hover:bg-white/20 transition-all">
+                    <span class="text-2xl">📄</span>
+                    <span>{% trans "Analyze Document" %}</span>
+                </a>
+            </div>
+            
+            <!-- Trust Badges -->
+            <div class="scroll-reveal stagger-4 flex flex-wrap items-center justify-center gap-4 md:gap-8">
+                <div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors cursor-default">
+                    <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    <span class="text-white font-medium">{% trans "Verified Lawyers" %}</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors cursor-default">
+                    <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                    <span class="text-white font-medium">{% trans "Secure Payments" %}</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors cursor-default">
+                    <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/></svg>
+                    <span class="text-white font-medium">{% trans "24/7 Support" %}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <a href="#categories" class="flex flex-col items-center text-white/60 hover:text-white transition-colors">
+            <span class="text-sm mb-2">{% trans "Scroll to explore" %}</span>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+        </a>
+    </div>
+</section>
+
+<!-- Legal Categories Section with 3D Cards -->
+<section id="categories" class="py-24 bg-white relative overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-indigo-50 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-purple-50 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="text-center mb-16">
+            <span class="scroll-reveal inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 text-sm font-semibold rounded-full mb-6">
+                <span class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></span>
+                <span>{% trans "Practice Areas" %}</span>
+            </span>
+            <h2 class="scroll-reveal stagger-1 text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                <span>{% trans "Legal Services" %}</span>
+                <span class="gradient-text">{% trans "Categories" %}</span>
+            </h2>
+            <p class="scroll-reveal stagger-2 text-gray-600 text-lg max-w-2xl mx-auto">
+                {% trans "Find experts specialized in your area of legal need" %}
+            </p>
+        </div>
+        
+        <!-- 3D Categories Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Category Cards with 3D flip animation -->
+            <a href="{% url 'providers' %}?category=family" class="scroll-reveal-flip stagger-1 card-3d group bg-white rounded-2xl p-6 shadow-lg shadow-gray-100 border border-gray-100 text-center hover:shadow-xl transition-all">
+                <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 group-hover:scale-110 transition-transform">👨‍👩‍👧</div>
+                <h3 class="font-bold text-gray-900">{% trans "Family Law" %}</h3>
+                <p class="text-sm text-gray-500 mt-1">{% trans "Divorce, Custody" %}</p>
+            </a>
+            
+            <a href="{% url 'providers' %}?category=criminal" class="scroll-reveal-flip stagger-2 card-3d group bg-white rounded-2xl p-6 shadow-lg shadow-gray-100 border border-gray-100 text-center hover:shadow-xl transition-all">
+                <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 group-hover:scale-110 transition-transform">⚖️</div>
+                <h3 class="font-bold text-gray-900">{% trans "Criminal Law" %}</h3>
+                <p class="text-sm text-gray-500 mt-1">{% trans "Defense, Bail" %}</p>
+            </a>
+            
+            <a href="{% url 'providers' %}?category=corporate" class="scroll-reveal-flip stagger-3 card-3d group bg-white rounded-2xl p-6 shadow-lg shadow-gray-100 border border-gray-100 text-center hover:shadow-xl transition-all">
+                <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 group-hover:scale-110 transition-transform">🏢</div>
+                <h3 class="font-bold text-gray-900">{% trans "Corporate Law" %}</h3>
+                <p class="text-sm text-gray-500 mt-1">{% trans "Business, Contracts" %}</p>
+            </a>
+            
+            <a href="{% url 'providers' %}?category=property" class="scroll-reveal-flip stagger-4 card-3d group bg-white rounded-2xl p-6 shadow-lg shadow-gray-100 border border-gray-100 text-center hover:shadow-xl transition-all">
+                <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 group-hover:scale-110 transition-transform">🏠</div>
+                <h3 class="font-bold text-gray-900">{% trans "Property Law" %}</h3>
+                <p class="text-sm text-gray-500 mt-1">{% trans "Real Estate, Disputes" %}</p>
+            </a>
+            
+            <a href="{% url 'providers' %}?category=labor" class="scroll-reveal-flip stagger-1 card-3d group bg-white rounded-2xl p-6 shadow-lg shadow-gray-100 border border-gray-100 text-center hover:shadow-xl transition-all">
+                <div class="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 group-hover:scale-110 transition-transform">👷</div>
+                <h3 class="font-bold text-gray-900">{% trans "Labor Law" %}</h3>
+                <p class="text-sm text-gray-500 mt-1">{% trans "Employment, Rights" %}</p>
+            </a>
+            
+            <a href="{% url 'providers' %}?category=consumer" class="scroll-reveal-flip stagger-2 card-3d group bg-white rounded-2xl p-6 shadow-lg shadow-gray-100 border border-gray-100 text-center hover:shadow-xl transition-all">
+                <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 group-hover:scale-110 transition-transform">🛒</div>
+                <h3 class="font-bold text-gray-900">{% trans "Consumer Law" %}</h3>
+                <p class="text-sm text-gray-500 mt-1">{% trans "Complaints, Refunds" %}</p>
+            </a>
+            
+            <a href="{% url 'providers' %}?category=tax" class="scroll-reveal-flip stagger-3 card-3d group bg-white rounded-2xl p-6 shadow-lg shadow-gray-100 border border-gray-100 text-center hover:shadow-xl transition-all">
+                <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 group-hover:scale-110 transition-transform">💰</div>
+                <h3 class="font-bold text-gray-900">{% trans "Tax Law" %}</h3>
+                <p class="text-sm text-gray-500 mt-1">{% trans "GST, Income Tax" %}</p>
+            </a>
+            
+            <a href="{% url 'providers' %}?category=cyber" class="scroll-reveal-flip stagger-4 card-3d group bg-white rounded-2xl p-6 shadow-lg shadow-gray-100 border border-gray-100 text-center hover:shadow-xl transition-all">
+                <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 group-hover:scale-110 transition-transform">💻</div>
+                <h3 class="font-bold text-gray-900">{% trans "Cyber Law" %}</h3>
+                <p class="text-sm text-gray-500 mt-1">{% trans "Online Fraud, Privacy" %}</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section with 3D Parallax -->
+<section class="py-24 bg-gray-50 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="text-center mb-16">
+            <span class="scroll-reveal inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 text-sm font-semibold rounded-full mb-6">
+                ✨ <span>{% trans "Simple Process" %}</span>
+            </span>
+            <h2 class="scroll-reveal stagger-1 text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                <span>{% trans "How It" %}</span>
+                <span class="text-indigo-600">{% trans "Works" %}</span>
+            </h2>
+            <p class="scroll-reveal stagger-2 text-gray-600 text-lg max-w-2xl mx-auto">
+                {% trans "Get legal help in three simple steps" %}
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8 lg:gap-12">
+            <!-- Step 1 -->
+            <div class="scroll-reveal-left stagger-1 parallax-3d" data-speed="0.3">
+                <div class="card-3d bg-white rounded-3xl p-8 lg:p-10 shadow-xl shadow-gray-100 border border-gray-100 text-center hover:shadow-2xl transition-all duration-300">
+                    <div class="relative inline-block mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-indigo-200">1</div>
+                        <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center text-xl shadow-md">📝</div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">{% trans "Describe Your Need" %}</h3>
+                    <p class="text-gray-600 leading-relaxed">{% trans "Use our smart triage system or search for specific legal services you require" %}</p>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="scroll-reveal stagger-2 parallax-3d" data-speed="0.5">
+                <div class="card-3d bg-white rounded-3xl p-8 lg:p-10 shadow-xl shadow-gray-100 border border-gray-100 text-center hover:shadow-2xl transition-all duration-300">
+                    <div class="relative inline-block mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-indigo-200">2</div>
+                        <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-green-400 rounded-xl flex items-center justify-center text-xl shadow-md">🎯</div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">{% trans "Get Matched" %}</h3>
+                    <p class="text-gray-600 leading-relaxed">{% trans "Our system connects you with verified legal professionals suited to your needs" %}</p>
+                </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="scroll-reveal-right stagger-3 parallax-3d" data-speed="0.3">
+                <div class="card-3d bg-white rounded-3xl p-8 lg:p-10 shadow-xl shadow-gray-100 border border-gray-100 text-center hover:shadow-2xl transition-all duration-300">
+                    <div class="relative inline-block mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-indigo-200">3</div>
+                        <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-400 rounded-xl flex items-center justify-center text-xl shadow-md">🤝</div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">{% trans "Consult Securely" %}</h3>
+                    <p class="text-gray-600 leading-relaxed">{% trans "Chat, video call, or meet in person. All with secure payment protection" %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section with 3D Effect -->
+<section class="py-20 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 relative overflow-hidden">
+    <!-- Decorative elements -->
+    <div class="absolute inset-0">
+        <div class="absolute top-0 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+            <div class="scroll-reveal-scale stagger-1 text-center group">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-3xl">👨‍⚖️</span>
+                </div>
+                <div class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">500+</div>
+                <div class="text-indigo-200 font-medium">{% trans "Verified Lawyers" %}</div>
+            </div>
+            <div class="scroll-reveal-scale stagger-2 text-center group">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-3xl">📁</span>
+                </div>
+                <div class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">10K+</div>
+                <div class="text-indigo-200 font-medium">{% trans "Cases Handled" %}</div>
+            </div>
+            <div class="scroll-reveal-scale stagger-3 text-center group">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-3xl">⭐</span>
+                </div>
+                <div class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">4.8</div>
+                <div class="text-indigo-200 font-medium">{% trans "Average Rating" %}</div>
+            </div>
+            <div class="scroll-reveal-scale stagger-4 text-center group">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-3xl">🕐</span>
+                </div>
+                <div class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">24/7</div>
+                <div class="text-indigo-200 font-medium">{% trans "Support Available" %}</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section with 3D Cards -->
+<section class="py-24 bg-white relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <span class="scroll-reveal inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 text-sm font-semibold rounded-full mb-6">
+                🚀 <span>{% trans "New Features" %}</span>
+            </span>
+            <h2 class="scroll-reveal stagger-1 text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                <span>{% trans "Advanced Legal" %}</span>
+                <span class="text-indigo-600">{% trans "Tech" %}</span>
+            </h2>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <a href="{% url 'emergency_page' %}" class="scroll-reveal-left stagger-1 card-3d group block bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-8 border border-red-100 hover:shadow-xl transition-all">
+                <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🆘</div>
+                <h3 class="font-bold text-xl text-gray-900 mb-3">{% trans "Panic Button" %}</h3>
+                <p class="text-gray-600">{% trans "Emergency legal help with one tap" %}</p>
+            </a>
+            
+            <!-- Feature 2 -->
+            <a href="{% url 'case_predictor' %}" class="scroll-reveal stagger-2 card-3d group block bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-8 border border-indigo-100 hover:shadow-xl transition-all">
+                <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">⚖️</div>
+                <h3 class="font-bold text-xl text-gray-900 mb-3">{% trans "AI Judge Simulator" %}</h3>
+                <p class="text-gray-600">{% trans "Predict case outcomes with AI" %}</p>
+            </a>
+            
+            <!-- Feature 3 -->
+            <a href="{% url 'crowdfunding_list' %}" class="scroll-reveal-right stagger-3 card-3d group block bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-8 border border-pink-100 hover:shadow-xl transition-all">
+                <div class="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">❤️</div>
+                <h3 class="font-bold text-xl text-gray-900 mb-3">{% trans "Pro Bono Crowdfunding" %}</h3>
+                <p class="text-gray-600">{% trans "Fund legal aid for those in need" %}</p>
+            </a>
+            
+            <!-- Feature 4 -->
+            <a href="{% url 'voice_input' %}" class="scroll-reveal-left stagger-1 card-3d group block bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-100 hover:shadow-xl transition-all">
+                <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🎤</div>
+                <h3 class="font-bold text-xl text-gray-900 mb-3">{% trans "Voice Input" %}</h3>
+                <p class="text-gray-600">{% trans "Get legal help in your language" %}</p>
+            </a>
+            
+            <!-- Feature 5 -->
+            <a href="{% url 'document_analyzer' %}" class="scroll-reveal stagger-2 card-3d group block bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-8 border border-cyan-100 hover:shadow-xl transition-all">
+                <div class="w-14 h-14 bg-cyan-100 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">📄</div>
+                <h3 class="font-bold text-xl text-gray-900 mb-3">{% trans "Document Analyzer" %}</h3>
+                <p class="text-gray-600">{% trans "AI-powered document analysis" %}</p>
+            </a>
+            
+            <!-- Feature 6 -->
+            <a href="{% url 'ai_assistant' %}" class="scroll-reveal-right stagger-3 card-3d group block bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-8 border border-violet-100 hover:shadow-xl transition-all">
+                <div class="w-14 h-14 bg-violet-100 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🤖</div>
+                <h3 class="font-bold text-xl text-gray-900 mb-3">{% trans "AI Assistant" %}</h3>
+                <p class="text-gray-600">{% trans "24/7 AI-powered legal guidance" %}</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section with 3D Effect -->
+<section class="py-24 bg-gray-900 relative overflow-hidden">
+    <!-- Background decorations -->
+    <div class="absolute inset-0">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="text-center">
+            <h2 class="scroll-reveal text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">{% trans "Ready to Get Started?" %}</h2>
+            <p class="scroll-reveal stagger-1 text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">{% trans "Whether you need legal advice, document review, or representation, we're here to help." %}</p>
+            
+            <div class="scroll-reveal stagger-2 flex flex-col sm:flex-row gap-5 justify-center">
+                <a href="{% url 'triage' %}" class="card-3d group inline-flex items-center justify-center gap-3 px-10 py-5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl font-bold text-lg hover:from-indigo-600 hover:to-purple-700 transition-all shadow-2xl shadow-indigo-500/30 glow-effect">
+                    <span>{% trans "Start Legal Triage" %}</span>
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </a>
+                <a href="{% url 'become_provider' %}" class="card-3d inline-flex items-center justify-center px-10 py-5 bg-transparent text-white rounded-2xl font-bold text-lg border-2 border-white/20 hover:bg-white/10 hover:border-white/40 transition-all">{% trans "Become a Provider" %}</a>
+            </div>
+            
+            <!-- Trust indicators -->
+            <div class="scroll-reveal stagger-3 mt-16 flex flex-wrap items-center justify-center gap-8 text-gray-500">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    <span>{% trans "No hidden fees" %}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    <span>{% trans "100% Secure" %}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    <span>{% trans "Money-back guarantee" %}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

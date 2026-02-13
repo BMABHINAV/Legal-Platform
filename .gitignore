@@ -1,0 +1,42 @@
+# Python
+*.py[cod]
+*$py.class
+__pycache__/
+*.so
+
+# Virtual environments
+venv/
+venv311/
+env/
+.venv/
+
+# Environment variables
+.env
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# Node modules
+node_modules/
+
+# Static files (collected)
+staticfiles/
+
+# Media uploads
+media/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Distribution
+dist/
+build/
+*.egg-info/

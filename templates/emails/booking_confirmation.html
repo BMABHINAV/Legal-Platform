@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .booking-card { background: #f8fafc; border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+        .detail-row:last-child { border-bottom: none; }
+        .label { color: #64748b; }
+        .value { font-weight: 600; color: #1e293b; }
+        .amount { font-size: 28px; color: #6366f1; font-weight: bold; text-align: center; margin: 20px 0; }
+        .btn { display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; }
+        .footer { background: #f8fafc; padding: 20px; text-align: center; color: #64748b; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚖️ Booking Confirmed!</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ client_name }},</p>
+            <p>Your consultation has been successfully booked. Here are the details:</p>
+            
+            <div class="booking-card">
+                <div class="detail-row">
+                    <span class="label">Lawyer</span>
+                    <span class="value">{{ provider_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Date</span>
+                    <span class="value">{{ date|date:"l, F j, Y" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Time</span>
+                    <span class="value">{{ time|time:"g:i A" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Type</span>
+                    <span class="value">{{ consultation_type }}</span>
+                </div>
+            </div>
+            
+            <div class="amount">₹{{ amount }}</div>
+            
+            <p style="text-align: center;">
+                <a href="#" class="btn">View Booking Details</a>
+            </p>
+            
+            <p style="margin-top: 30px; color: #64748b;">
+                <strong>Important:</strong> Please be ready 5 minutes before your scheduled time. 
+                You'll receive a reminder 1 hour before the consultation.
+            </p>
+        </div>
+        <div class="footer">
+            <p>© 2026 Legal Platform. All rights reserved.</p>
+            <p>If you have any questions, contact us at support@legalplatform.com</p>
+        </div>
+    </div>
+</body>
+</html>

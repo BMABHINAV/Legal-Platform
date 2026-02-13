@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+{% load i18n %}
+{% load multilingual %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Legal Platform{% endblock %}</title>
+    
+    <!-- Tailwind CSS + DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#6366f1',
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                        accent: '#8b5cf6',
+                        dark: '#1e1b4b',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- HTMX for real-time features -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/ws.js"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{% load static %}{% static 'css/style.css' %}">
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            background: linear-gradient(135deg, #f5f7ff 0%, #fff 25%, #f0f4ff 50%, #fff 75%, #faf8ff 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        /* 3D Scroll Container */
+        .scroll-3d-container {
+            perspective: 1000px;
+            perspective-origin: center;
+        }
+        
+        /* 3D Scroll Reveal Animations */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(60px) rotateX(15deg);
+            transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+        }
+        
+        .scroll-reveal.visible {
+            opacity: 1;
+            transform: translateY(0) rotateX(0);
+        }
+        
+        .scroll-reveal-left {
+            opacity: 0;
+            transform: translateX(-100px) rotateY(25deg);
+            transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+        }
+        
+        .scroll-reveal-left.visible {
+            opacity: 1;
+            transform: translateX(0) rotateY(0);
+        }
+        
+        .scroll-reveal-right {
+            opacity: 0;
+            transform: translateX(100px) rotateY(-25deg);
+            transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+        }
+        
+        .scroll-reveal-right.visible {
+            opacity: 1;
+            transform: translateX(0) rotateY(0);
+        }
+        
+        .scroll-reveal-scale {
+            opacity: 0;
+            transform: scale(0.8) rotateX(10deg);
+            transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+        }
+        
+        .scroll-reveal-scale.visible {
+            opacity: 1;
+            transform: scale(1) rotateX(0);
+        }
+        
+        .scroll-reveal-flip {
+            opacity: 0;
+            transform: perspective(600px) rotateY(90deg);
+            transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+        }
+        
+        .scroll-reveal-flip.visible {
+            opacity: 1;
+            transform: perspective(600px) rotateY(0);
+        }
+        
+        /* Parallax 3D layers */
+        .parallax-3d {
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+        
+        .parallax-layer-back {
+            transform: translateZ(-200px) scale(1.4);
+        }
+        
+        .parallax-layer-mid {
+            transform: translateZ(-100px) scale(1.2);
+        }
+        
+        .parallax-layer-front {
+            transform: translateZ(0);
+        }
+        
+        /* 3D Card hover effect */
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-3d:hover {
+            transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) translateZ(20px);
+        }
+        
+        .card-3d-inner {
+            transform: translateZ(30px);
+        }
+        
+        /* Floating 3D animation */
+        @keyframes float3d {
+            0%, 100% { 
+                transform: translateY(0) rotateX(0deg) rotateY(0deg);
+            }
+            25% { 
+                transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
+            }
+            50% { 
+                transform: translateY(-10px) rotateX(0deg) rotateY(-5deg);
+            }
+            75% { 
+                transform: translateY(-20px) rotateX(-5deg) rotateY(3deg);
+            }
+        }
+        
+        .float-3d {
+            animation: float3d 8s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+        
+        /* Scroll-linked rotation */
+        .scroll-rotate {
+            transition: transform 0.1s ease-out;
+        }
+        
+        /* Staggered animation delays */
+        .stagger-1 { transition-delay: 0.1s; }
+        .stagger-2 { transition-delay: 0.2s; }
+        .stagger-3 { transition-delay: 0.3s; }
+        .stagger-4 { transition-delay: 0.4s; }
+        .stagger-5 { transition-delay: 0.5s; }
+        .stagger-6 { transition-delay: 0.6s; }
+        
+        /* Gradient text styling */
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Glass card effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.08);
+        }
+        
+        /* Card hover effect */
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15);
+        }
+        
+        /* Button glow effect */
+        .btn-glow {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Scroll progress bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+            z-index: 9999;
+            transition: width 0.1s ease-out;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #6366f1, #8b5cf6);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #4f46e5, #7c3aed);
+        }
+        
+        /* Animated underline */
+        .animated-underline {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .animated-underline::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+        
+        .animated-underline:hover::after {
+            width: 100%;
+        }
+        
+        /* Text shadow for emphasis */
+        .text-shadow {
+            text-shadow: 0 2px 10px rgba(99, 102, 241, 0.2);
+        }
+        
+        /* 3D Section divider */
+        .section-3d-divider {
+            position: relative;
+            height: 150px;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+        
+        .section-3d-divider::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent, currentColor);
+            transform: skewY(-3deg) translateZ(10px);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col scroll-3d-container">
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+    
+    {% include 'core/partials/header.html' %}
+    
+    <main class="flex-grow">
+        {% if messages %}
+        <div class="container mx-auto px-4 mt-4">
+            {% for message in messages %}
+            <div class="p-4 mb-4 rounded-xl shadow-sm {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-700 border border-yellow-200{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% include 'core/partials/footer.html' %}
+    
+    <!-- 3D Scroll Animation Script -->
+    <script>
+        // Scroll Progress Bar
+        function updateScrollProgress() {
+            const scrollProgress = document.getElementById('scrollProgress');
+            const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+            const scrolled = window.scrollY;
+            const progress = (scrolled / scrollable) * 100;
+            if (scrollProgress) {
+                scrollProgress.style.width = progress + '%';
+            }
+        }
+        
+        // 3D Scroll Reveal Animation using Intersection Observer
+        const scrollRevealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    // Add stagger delay based on element index within viewport
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100);
+                }
+            });
+        }, { 
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+        
+        // 3D Parallax on scroll
+        let ticking = false;
+        function update3DParallax() {
+            const scrolled = window.scrollY;
+            const parallaxElements = document.querySelectorAll('.parallax-3d');
+            
+            parallaxElements.forEach(el => {
+                const speed = parseFloat(el.dataset.speed) || 0.5;
+                const rect = el.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                const viewportCenter = window.innerHeight / 2;
+                const distance = centerY - viewportCenter;
+                
+                const rotateX = (distance / viewportCenter) * 10 * speed;
+                const translateZ = Math.abs(distance / viewportCenter) * -50 * speed;
+                
+                el.style.transform = `perspective(1000px) rotateX(${rotateX}deg) translateZ(${translateZ}px)`;
+            });
+            
+            // Update scroll-linked rotation elements
+            const rotateElements = document.querySelectorAll('.scroll-rotate');
+            rotateElements.forEach(el => {
+                const rotation = (scrolled * 0.1) % 360;
+                el.style.transform = `rotate(${rotation}deg)`;
+            });
+            
+            ticking = false;
+        }
+        
+        // 3D Card tilt effect on mouse move
+        function init3DCardTilt() {
+            const cards = document.querySelectorAll('.card-3d');
+            
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = (y - centerY) / 10;
+                    const rotateY = (centerX - x) / 10;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+                });
+            });
+        }
+        
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            // Observe all scroll reveal elements
+            document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale, .scroll-reveal-flip').forEach(el => {
+                scrollRevealObserver.observe(el);
+            });
+            
+            // Initialize 3D card tilt
+            init3DCardTilt();
+            
+            // Initial scroll progress
+            updateScrollProgress();
+        });
+        
+        // Scroll event handler with requestAnimationFrame for performance
+        window.addEventListener('scroll', () => {
+            updateScrollProgress();
+            
+            if (!ticking) {
+                requestAnimationFrame(update3DParallax);
+                ticking = true;
+            }
+        }, { passive: true });
+    </script>
+    
+    <!-- HTMX Configuration -->
+    <script>
+        // HTMX Configuration
+        document.body.addEventListener('htmx:configRequest', (e) => {
+            e.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+        
+        document.body.addEventListener('htmx:beforeRequest', (e) => {
+            const indicator = e.target.querySelector('.htmx-indicator');
+            if (indicator) indicator.classList.remove('hidden');
+        });
+        
+        document.body.addEventListener('htmx:afterRequest', (e) => {
+            const indicator = e.target.querySelector('.htmx-indicator');
+            if (indicator) indicator.classList.add('hidden');
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

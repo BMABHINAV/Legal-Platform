@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Availability - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">Manage Availability</h1>
+                <p class="text-base-content/70 mt-1">Set your weekly availability for client bookings</p>
+            </div>
+            <a href="{% url 'provider_dashboard' %}" class="btn btn-ghost mt-4 md:mt-0 gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to Dashboard
+            </a>
+        </div>
+        
+        <div class="grid gap-8">
+            <!-- Current Availability -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Weekly Schedule
+                    </h2>
+                    <p class="text-base-content/70 mb-4">Your current availability settings</p>
+                    
+                    {% if availability %}
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in availability %}
+                                <tr>
+                                    <td class="font-medium">{{ slot.get_day_of_week_display }}</td>
+                                    <td>{{ slot.start_time|time:"g:i A" }}</td>
+                                    <td>{{ slot.end_time|time:"g:i A" }}</td>
+                                    <td>
+                                        {% if slot.is_available %}
+                                            <span class="badge badge-success">Available</span>
+                                        {% else %}
+                                            <span class="badge badge-error">Unavailable</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>No availability set. Add your schedule below.</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Add Availability -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        Set Availability
+                    </h2>
+                    <p class="text-base-content/70 mb-4">Add or update your weekly availability slots</p>
+                    
+                    <form method="post" id="availability-form">
+                        {% csrf_token %}
+                        
+                        <div id="slots-container">
+                            <!-- Default slot template -->
+                            <div class="slot-row grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-base-200 rounded-xl">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text">Day</span></label>
+                                    <select name="days[]" class="select select-bordered w-full" required>
+                                        {% for day in days_of_week %}
+                                        <option value="{{ day.0 }}">{{ day.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text">Start Time</span></label>
+                                    <input type="time" name="start_times[]" class="input input-bordered" value="09:00" required>
+                                </div>
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text">End Time</span></label>
+                                    <input type="time" name="end_times[]" class="input input-bordered" value="17:00" required>
+                                </div>
+                                <div class="form-control flex items-end">
+                                    <button type="button" class="btn btn-error btn-outline" onclick="removeSlot(this)">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4 mt-4">
+                            <button type="button" class="btn btn-outline gap-2" onclick="addSlot()">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                                Add Another Slot
+                            </button>
+                            <button type="submit" class="btn btn-primary gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                Save Availability
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Time Off -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <svg class="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        Time Off
+                    </h2>
+                    <p class="text-base-content/70 mb-4">Block specific dates when you're unavailable</p>
+                    
+                    {% if time_off %}
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for off in time_off %}
+                        <div class="badge badge-lg badge-error gap-2">
+                            {{ off.date|date:"M d, Y" }}
+                            {% if off.reason %}<span class="opacity-70">- {{ off.reason }}</span>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-base-content/50 italic mb-4">No time off scheduled</p>
+                    {% endif %}
+                    
+                    <div class="flex gap-4">
+                        <input type="date" id="time-off-date" class="input input-bordered">
+                        <input type="text" id="time-off-reason" class="input input-bordered flex-1" placeholder="Reason (optional)">
+                        <button class="btn btn-error" onclick="addTimeOff()">Add Time Off</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addSlot() {
+    const container = document.getElementById('slots-container');
+    const template = container.querySelector('.slot-row').cloneNode(true);
+    
+    // Reset values
+    template.querySelectorAll('input').forEach(input => input.value = '');
+    template.querySelector('select').selectedIndex = 0;
+    
+    container.appendChild(template);
+}
+
+function removeSlot(btn) {
+    const container = document.getElementById('slots-container');
+    if (container.querySelectorAll('.slot-row').length > 1) {
+        btn.closest('.slot-row').remove();
+    } else {
+        alert('You need at least one availability slot');
+    }
+}
+
+function addTimeOff() {
+    const date = document.getElementById('time-off-date').value;
+    const reason = document.getElementById('time-off-reason').value;
+    
+    if (!date) {
+        alert('Please select a date');
+        return;
+    }
+    
+    // Add time off via API (implement endpoint)
+    alert('Time off feature coming soon!');
+}
+</script>
+{% endblock %}

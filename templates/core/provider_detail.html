@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ provider.name }} - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <a href="{% url 'providers' %}" class="text-primary-600 hover:text-primary-700 mb-6 inline-block">
+        ← Back to Providers
+    </a>
+    
+    <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Profile Header -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0   ">
+                        <span class="text-4xl font-bold text-primary-600">{{ provider.name|slice:":1" }}</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900">{{ provider.name }}</h1>
+                                <p class="text-gray-600 capitalize">{{ provider.provider_type }}</p>
+                                {% if provider.bar_registration_number %}
+                                <p class="text-sm text-gray-500">Bar Reg: {{ provider.bar_registration_number }}</p>
+                                {% endif %}
+                            </div>
+                            {% if provider.verification_status == 'verified' %}
+                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                ✓ Verified
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4 mt-4 text-sm">
+                            <div class="flex items-center gap-1">
+                                <span class="text-yellow-500">★</span>
+                                <span class="font-medium">{{ provider.rating }}</span>
+                                <span class="text-gray-500">({{ provider.review_count }} reviews)</span>
+                            </div>
+                            <div class="text-gray-600">{{ provider.years_of_experience }} years experience</div>
+                            <div class="text-gray-600">{{ provider.completed_cases }} cases completed</div>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            {% for spec in provider.specializations %}
+                            <span class="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-sm capitalize">{{ spec }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- About -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">About</h2>
+                <p class="text-gray-600">{{ provider.bio }}</p>
+            </div>
+            
+            <!-- Languages -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Languages</h2>
+                <div class="flex flex-wrap gap-2">
+                    {% for lang in provider.languages %}
+                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">{{ lang }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Badges -->
+            {% if provider.badges %}
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Achievements</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 ">
+                    {% for badge in provider.badges %}
+                    <div class="p-4 bg-gradient-to-br from-primary-50 to-accent/10 rounded-lg text-center">
+                        <span class="text-3xl">{{ badge.icon }}</span>
+                        <h3 class="font-semibold text-gray-900 mt-2">{{ badge.name }}</h3>
+                        <p class="text-xs text-gray-600">{{ badge.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Services -->
+            {% if services %}
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Services Offered</h2>
+                <div class="space-y-4">
+                    {% for service in services %}
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-gray-900">{{ service.title }}</h3>
+                            <span class="text-primary-600 font-medium">
+                                ₹{{ service.price_min }} - ₹{{ service.price_max }}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">{{ service.description }}</p>
+                        <div class="flex flex-wrap gap-2 text-xs text-gray-500">
+                            {% if service.duration %}
+                            <span>⏱️ {{ service.duration }}</span>
+                            {% endif %}
+                            {% if service.delivery_time %}
+                            <span>📅 {{ service.delivery_time }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Quick Info -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h3 class="font-semibold text-gray-900 mb-4">Quick Info</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Location</span>
+                        <span class="font-medium">{{ provider.city }}, {{ provider.state }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Response Time</span>
+                        <span class="font-medium">{{ provider.response_time }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Hourly Rate</span>
+                        <span class="font-medium">₹{{ provider.hourly_rate }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Status</span>
+                        <span class="font-medium capitalize 
+                            {% if provider.availability_status == 'available' %}text-green-600
+                            {% elif provider.availability_status == 'busy' %}text-yellow-600
+                            {% else %}text-red-600{% endif %}">
+                            {{ provider.availability_status }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tier</span>
+                        <span class="px-2 py-1 {{ provider.tier.badge_class }} rounded-full text-xs font-medium">
+                            {{ provider.tier.name }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Actions -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <a href="{% url 'booking_create' provider.id %}" class="block w-full py-3 bg-primary-600 text-white text-center rounded-lg font-semibold hover:bg-primary-700 transition mb-3">
+                    Book Consultation
+                </a>
+                <button class="w-full py-3 border-2 border-primary-600 text-primary-600 rounded-lg font-semibold hover:bg-primary-50 transition">
+                    Send Message
+                </button>
+            </div>
+            
+            <!-- Incentive Points -->
+            <div class="bg-gradient-to-br from-primary-50 to-accent/10 rounded-xl p-6">
+                <h3 class="font-semibold text-gray-900 mb-2">Incentive Points</h3>
+                <div class="text-3xl font-bold text-primary-600">{{ provider.incentive_points }}</div>
+                <p class="text-sm text-gray-600 mt-1">{{ provider.tier.name }} Member</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

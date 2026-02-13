@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Provider Dashboard - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Provider Dashboard</h1>
+        <p class="text-gray-600">Manage your profile, services, and track your performance</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="grid md:grid-cols-4 gap-6 mb-8 ">
+        <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all">
+            <p class="text-gray-600 text-sm mb-1">Incentive Points</p>
+            <p class="text-3xl font-bold text-primary-600"><span data-countup="{{ provider.incentive_points }}">{{ provider.incentive_points }}</span></p>
+            <span class="inline-block mt-2 px-2 py-1 {{ tier.badge_class }} rounded text-xs font-medium">
+                {{ tier.name }}
+            </span>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all">
+            <p class="text-gray-600 text-sm mb-1">Rating</p>
+            <p class="text-3xl font-bold text-gray-900">
+                <span class="text-yellow-500">★</span> {{ provider.rating|default:"0.0" }}
+            </p>
+            <p class="text-sm text-gray-500 mt-2">{{ provider.review_count }} reviews</p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all">
+            <p class="text-gray-600 text-sm mb-1">Completed Cases</p>
+            <p class="text-3xl font-bold text-gray-900"><span data-countup="{{ provider.completed_cases }}">{{ provider.completed_cases }}</span></p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all">
+            <p class="text-gray-600 text-sm mb-1">Response Time</p>
+            <p class="text-3xl font-bold text-gray-900">{{ provider.response_time|default:"N/A" }}</p>
+        </div>
+    </div>
+    
+    <!-- Next Tier Progress -->
+    {% if next_tier %}
+    <div class="bg-gradient-to-r from-primary-50 to-accent/10 rounded-xl p-6 mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="font-semibold text-gray-900">Progress to {{ next_tier.tier.name }}</h3>
+                <p class="text-sm text-gray-600">{{ next_tier.points_needed }} more points needed</p>
+            </div>
+            <span class="text-2xl">
+                {% if next_tier.tier.name == 'Platinum' %}💎{% elif next_tier.tier.name == 'Gold' %}🥇{% elif next_tier.tier.name == 'Silver' %}🥈{% else %}🥉{% endif %}
+            </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="bg-primary-600 h-3 rounded-full" style="width: {{ next_tier.progress_percent|default:0 }}%"></div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="grid md:grid-cols-2 gap-8">
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+            <div class="space-y-3">
+                <a href="{% url 'leaderboard' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <span class="text-xl">🏆</span>
+                    <span>View Leaderboard</span>
+                </a>
+                <a href="{% url 'incentives' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <span class="text-xl">🎯</span>
+                    <span>Incentive Program</span>
+                </a>
+                <a href="{% url 'profile' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <span class="text-xl">👤</span>
+                    <span>Edit Profile</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- How to Earn More Points -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Earn More Points</h2>
+            <div class="space-y-3">
+                {% for rule in incentive_rules|slice:":5" %}
+                <div class="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                        <p class="font-medium text-gray-900">{{ rule.name }}</p>
+                        <p class="text-xs text-gray-500">{{ rule.description }}</p>
+                    </div>
+                    <span class="text-green-600 font-bold">+{{ rule.points_awarded }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{% url 'incentives' %}" class="block text-center text-primary-600 hover:text-primary-700 mt-4">
+                View all incentives →
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

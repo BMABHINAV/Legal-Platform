@@ -1,0 +1,266 @@
+{% load static %}
+{% load i18n %}
+{% load multilingual %}
+<header class="bg-white/70 backdrop-blur-xl shadow-sm sticky top-0 z-50 border-b border-gray-100/50 transition-all duration-500" x-data="{ mobileMenuOpen: false, featuresOpen: false, langOpen: false, scrolled: false }" x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 20 })" :class="{ 'bg-white/95 shadow-md': scrolled }">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20 py-3">
+            <!-- Logo with animation -->
+            <a href="{% url 'home' %}" class="flex items-center space-x-3 group">
+                <div class="relative w-12 h-12 bg-gradient-to-br from-primary-500 to-accent rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-primary-500/40 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+                    <span class="text-2xl transition-transform duration-500 group-hover:scale-110">⚖️</span>
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-bold gradient-text tracking-tight">Legal Platform</span>
+                    <span class="text-[10px] text-gray-400 font-medium uppercase tracking-widest -mt-0.5">{% trans "Justice for Everyone" %}</span>
+                </div>
+            </a>
+            
+            <!-- Desktop Navigation with enhanced hover effects -->
+            <nav class="hidden md:flex items-center space-x-1">
+                <a href="{% url 'providers' %}" class="relative px-4 py-2.5 text-gray-600 hover:text-primary-600 rounded-xl transition-all font-medium group overflow-hidden">
+                    <span class="relative z-10">{% trans "Find Lawyers" %}</span>
+                    <span class="absolute inset-0 bg-gradient-to-r from-primary-50 to-purple-50 rounded-xl scale-0 group-hover:scale-100 transition-transform duration-300 origin-center"></span>
+                </a>
+                <a href="{% url 'document_analyzer' %}" class="relative px-4 py-2.5 text-gray-600 hover:text-primary-600 rounded-xl transition-all font-medium group overflow-hidden">
+                    <span class="relative z-10">{% trans "Document Analyzer" %}</span>
+                    <span class="absolute inset-0 bg-gradient-to-r from-primary-50 to-purple-50 rounded-xl scale-0 group-hover:scale-100 transition-transform duration-300 origin-center"></span>
+                </a>
+                <a href="{% url 'ai_assistant' %}" class="relative px-4 py-2.5 text-gray-600 hover:text-primary-600 rounded-xl transition-all font-medium group overflow-hidden">
+                    <span class="relative z-10">{% trans "AI Assistant" %}</span>
+                    <span class="absolute inset-0 bg-gradient-to-r from-primary-50 to-purple-50 rounded-xl scale-0 group-hover:scale-100 transition-transform duration-300 origin-center"></span>
+                </a>
+                
+                <!-- Features Dropdown with animation -->
+                <div class="relative" @click.away="featuresOpen = false">
+                    <button @click="featuresOpen = !featuresOpen" class="flex items-center px-4 py-2.5 text-gray-600 hover:text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 rounded-xl transition-all font-medium">
+                        {% trans "Features" %}
+                        <svg class="w-4 h-4 ml-1.5 transition-transform duration-300" :class="featuresOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="featuresOpen" x-cloak
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-4 scale-95" class="absolute left-0 mt-3 w-72 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-100/50 py-4 z-50 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary-50/30 to-purple-50/30 pointer-events-none"></div>
+                        <div class="relative">
+                            <div class="px-5 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest">{% trans "Real-Time Features" %}</div>
+                            <a href="{% url 'emergency_page' %}" class="flex items-center px-5 py-3.5 text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-orange-50 hover:text-red-600 transition-all group">
+                                <span class="w-10 h-10 bg-gradient-to-br from-red-100 to-orange-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">🆘</span>
+                                <div>
+                                    <div class="font-semibold">{% trans "Panic Button" %}</div>
+                                    <div class="text-xs text-gray-500">{% trans "Emergency legal help" %}</div>
+                                </div>
+                                <span class="ml-auto text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">SOS</span>
+                            </a>
+                            <a href="{% url 'case_predictor' %}" class="flex items-center px-5 py-3.5 text-gray-700 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 hover:text-primary-600 transition-all group">
+                                <span class="w-10 h-10 bg-gradient-to-br from-primary-100 to-purple-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">⚖️</span>
+                                <div>
+                                    <div class="font-semibold">{% trans "AI Judge Simulator" %}</div>
+                                    <div class="text-xs text-gray-500">{% trans "Case outcome prediction" %}</div>
+                                </div>
+                                <span class="ml-auto text-xs bg-primary-100 text-primary-600 px-2 py-1 rounded-full font-bold">AI</span>
+                            </a>
+                            <a href="{% url 'crowdfunding_list' %}" class="flex items-center px-5 py-3.5 text-gray-700 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 hover:text-pink-600 transition-all group">
+                                <span class="w-10 h-10 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">❤️</span>
+                                <div>
+                                    <div class="font-semibold">{% trans "Pro Bono Crowdfunding" %}</div>
+                                    <div class="text-xs text-gray-500">{% trans "Fund legal aid" %}</div>
+                                </div>
+                            </a>
+                            <a href="{% url 'voice_input' %}" class="flex items-center px-5 py-3.5 text-gray-700 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 hover:text-green-600 transition-all group">
+                                <span class="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">🎤</span>
+                                <div>
+                                    <div class="font-semibold">{% trans "Voice Input" %}</div>
+                                    <div class="text-xs text-gray-500">{% trans "Speak in your language" %}</div>
+                                </div>
+                                <span class="ml-auto text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-bold">NEW</span>
+                            </a>
+                            <div class="border-t border-gray-100 my-3"></div>
+                            <a href="{% url 'triage' %}" class="flex items-center px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all group">
+                                <span class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">🔍</span>
+                                <span class="font-semibold">{% trans "Legal Triage" %}</span>
+                            </a>
+                            <a href="{% url 'leaderboard' %}" class="flex items-center px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all group">
+                                <span class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">🏆</span>
+                                <span class="font-semibold">{% trans "Leaderboard" %}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- Auth Buttons with animations -->
+            <div class="hidden md:flex items-center space-x-3">
+                <!-- Language Selector -->
+                <div class="relative" @click.away="langOpen = false">
+                    <button @click="langOpen = !langOpen" class="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all font-medium">
+                        <span class="text-lg">🌐</span>
+                        <span class="text-sm">{% get_current_language as LANGUAGE_CODE %}{{ LANGUAGE_CODE|upper }}</span>
+                        <svg class="w-3 h-3 transition-transform duration-300" :class="langOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="langOpen" x-cloak
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-2 scale-95" class="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100/50 py-2 z-50 max-h-80 overflow-y-auto">
+                        <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 mb-2">{% trans "Select Language" %}</div>
+                        <form action="{% url 'set_language' %}" method="post" id="language-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            {% get_available_languages as LANGUAGES %}
+                            {% get_current_language as LANGUAGE_CODE %}
+                            {% for lang_code, lang_name in LANGUAGES %}
+                            <button type="submit" name="language" value="{{ lang_code }}" class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 transition-all {% if lang_code == LANGUAGE_CODE %}bg-primary-50 text-primary-600{% else %}text-gray-700{% endif %}">
+                                <span class="text-lg">
+                                    {% if lang_code == 'en' %}🇬🇧{% elif lang_code == 'hi' %}🇮🇳{% elif lang_code == 'ta' %}🇮🇳{% elif lang_code == 'te' %}🇮🇳{% elif lang_code == 'bn' %}🇮🇳{% elif lang_code == 'mr' %}🇮🇳{% elif lang_code == 'gu' %}🇮🇳{% elif lang_code == 'kn' %}🇮🇳{% elif lang_code == 'ml' %}🇮🇳{% elif lang_code == 'pa' %}🇮🇳{% else %}🌐{% endif %}
+                                </span>
+                                <span class="font-medium">{{ lang_name }}</span>
+                                {% if lang_code == LANGUAGE_CODE %}
+                                <span class="ml-auto text-primary-600">✓</span>
+                                {% endif %}
+                            </button>
+                            {% endfor %}
+                        </form>
+                    </div>
+                </div>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="flex items-center gap-3 px-4 py-2.5 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all group">
+                        <div class="relative w-9 h-9 bg-gradient-to-br from-primary-500 to-accent rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg group-hover:shadow-primary-500/30 transition-all group-hover:scale-105">
+                            {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+                        </div>
+                        <span class="font-medium">{{ user.get_full_name|default:user.username }}</span>
+                    </a>
+                    {% if user.role == 'provider' %}
+                        <a href="{% url 'provider_dashboard' %}" class="px-4 py-2.5 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all font-medium">{% trans "Dashboard" %}</a>
+                    {% else %}
+                        <a href="{% url 'citizen_dashboard' %}" class="px-4 py-2.5 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all font-medium">{% trans "Dashboard" %}</a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="px-4 py-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all font-medium">{% trans "Logout" %}</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="px-5 py-2.5 text-gray-600 hover:text-primary-600 font-medium transition-all hover:bg-primary-50 rounded-xl">{% trans "Login" %}</a>
+                    <a href="{% url 'signup' %}" class="shine-effect px-6 py-2.5 bg-gradient-to-r from-primary-600 to-accent text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:shadow-primary-500/30 transition-all hover:-translate-y-0.5 hover:scale-105">{% trans "Sign Up" %}</a>
+                {% endif %}
+            </div>
+            
+            <!-- Mobile Menu Button with animation -->
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-3 rounded-xl hover:bg-primary-50 transition-all group" aria-label="Toggle menu">
+                <div class="w-6 h-5 relative flex flex-col justify-between">
+                    <span class="w-full h-0.5 bg-gray-600 rounded-full transition-all duration-300 origin-left" :class="mobileMenuOpen ? 'rotate-45 translate-y-0.5' : ''"></span>
+                    <span class="w-full h-0.5 bg-gray-600 rounded-full transition-all duration-300" :class="mobileMenuOpen ? 'opacity-0 translate-x-3' : ''"></span>
+                    <span class="w-full h-0.5 bg-gray-600 rounded-full transition-all duration-300 origin-left" :class="mobileMenuOpen ? '-rotate-45 -translate-y-0.5' : ''"></span>
+                </div>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu with enhanced animations -->
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-400"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4" class="md:hidden py-5 border-t border-gray-100/50 bg-gradient-to-b from-white/80 to-gray-50/80 backdrop-blur-lg">
+            <nav class="flex flex-col space-y-1">
+                <a href="{% url 'providers' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.1s both;">
+                    <span class="text-xl group-hover:scale-125 transition-transform duration-300">👨‍⚖️</span>
+                    <span class="font-medium">{% trans "Find Lawyers" %}</span>
+                    <span class="ml-auto opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">→</span>
+                </a>
+                <a href="{% url 'document_analyzer' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.15s both;">
+                    <span class="text-xl group-hover:scale-125 transition-transform duration-300">📄</span>
+                    <span class="font-medium">{% trans "Document Analyzer" %}</span>
+                    <span class="ml-auto opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">→</span>
+                </a>
+                <a href="{% url 'ai_assistant' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.2s both;">
+                    <span class="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform duration-300">🤖</span>
+                    <span class="font-medium">{% trans "AI Assistant" %}</span>
+                    <span class="ml-auto text-xs bg-gradient-to-r from-primary-100 to-purple-100 text-primary-600 px-2 py-1 rounded-full font-bold">AI</span>
+                </a>
+                <a href="{% url 'triage' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.25s both;">
+                    <span class="text-xl group-hover:scale-125 transition-transform duration-300">⚡</span>
+                    <span class="font-medium">{% trans "Legal Triage" %}</span>
+                    <span class="ml-auto opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">→</span>
+                </a>
+                <a href="{% url 'leaderboard' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-primary-600 hover:bg-gradient-to-r hover:from-yellow-50 hover:to-orange-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.3s both;">
+                    <span class="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform duration-300">🏆</span>
+                    <span class="font-medium">{% trans "Leaderboard" %}</span>
+                    <span class="ml-auto opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">→</span>
+                </a>
+                
+                <!-- New Features with stagger animations -->
+                <div class="border-t border-gray-100/50 pt-4 mt-3" style="animation: fadeIn 0.4s ease-out 0.35s both;">
+                    <p class="px-4 text-xs text-gray-400 mb-3 uppercase tracking-widest font-bold flex items-center gap-2">
+                        <span class="animate-pulse">✨</span> {% trans "Real-Time Features" %}
+                    </p>
+                    <a href="{% url 'emergency_page' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-orange-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.4s both;">
+                        <span class="w-10 h-10 bg-gradient-to-br from-red-100 to-orange-100 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:shadow-lg transition-all">🆘</span>
+                        <div>
+                            <div class="font-semibold">{% trans "Panic Button" %}</div>
+                            <div class="text-xs text-gray-400">{% trans "Emergency help" %}</div>
+                        </div>
+                        <span class="ml-auto text-xs bg-red-500 text-white px-2.5 py-1 rounded-full font-bold animate-pulse">SOS</span>
+                    </a>
+                    <a href="{% url 'case_predictor' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.45s both;">
+                        <span class="w-10 h-10 bg-gradient-to-br from-primary-100 to-purple-100 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:shadow-lg transition-all">⚖️</span>
+                        <div>
+                            <div class="font-semibold">{% trans "AI Judge Simulator" %}</div>
+                            <div class="text-xs text-gray-400">{% trans "Predict outcomes" %}</div>
+                        </div>
+                        <span class="ml-auto text-xs bg-gradient-to-r from-primary-500 to-purple-500 text-white px-2.5 py-1 rounded-full font-bold">AI</span>
+                    </a>
+                    <a href="{% url 'crowdfunding_list' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-pink-600 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.5s both;">
+                        <span class="w-10 h-10 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:shadow-lg transition-all">❤️</span>
+                        <div>
+                            <div class="font-semibold">{% trans "Pro Bono Crowdfunding" %}</div>
+                            <div class="text-xs text-gray-400">{% trans "Fund legal aid" %}</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'voice_input' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-green-600 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-xl transition-all group" style="animation: slideInRight 0.3s ease-out 0.55s both;">
+                        <span class="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:shadow-lg transition-all">🎤</span>
+                        <div>
+                            <div class="font-semibold">{% trans "Voice Input" %}</div>
+                            <div class="text-xs text-gray-400">{% trans "Speak your language" %}</div>
+                        </div>
+                        <span class="ml-auto text-xs bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2.5 py-1 rounded-full font-bold">NEW</span>
+                    </a>
+                </div>
+                
+                {% if user.is_authenticated %}
+                    <div class="border-t border-gray-100/50 pt-4 mt-3 space-y-1" style="animation: fadeIn 0.4s ease-out 0.6s both;">
+                        <a href="{% url 'profile' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-purple-50 rounded-xl transition-all group">
+                            <div class="relative w-10 h-10 bg-gradient-to-br from-primary-500 to-accent rounded-xl flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-primary-500/30 transition-all group-hover:scale-105">
+                                {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                                <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+                            </div>
+                            <div>
+                                <div class="font-semibold">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-xs text-gray-400">{% trans "View Profile" %}</div>
+                            </div>
+                        </a>
+                        <a href="{% url 'logout' %}" class="flex items-center gap-3 px-4 py-3.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all group">
+                            <span class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-xl group-hover:bg-red-100 transition-colors">🚪</span>
+                            <span class="font-medium">{% trans "Logout" %}</span>
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="border-t border-gray-100/50 pt-5 mt-3 px-4 space-y-3" style="animation: fadeIn 0.4s ease-out 0.6s both;">
+                        <a href="{% url 'login' %}" class="block w-full px-4 py-3.5 text-center text-gray-600 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 hover:border-primary-300 hover:text-primary-600 transition-all">{% trans "Login" %}</a>
+                        <a href="{% url 'signup' %}" class="shine-effect block w-full px-4 py-3.5 text-center bg-gradient-to-r from-primary-600 to-accent text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:shadow-primary-500/30 transition-all hover:-translate-y-0.5">{% trans "Sign Up Free" %}</a>
+                    </div>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</header>

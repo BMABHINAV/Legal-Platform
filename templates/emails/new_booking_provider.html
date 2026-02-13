@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .alert-box { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .booking-card { background: #f8fafc; border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+        .detail-row:last-child { border-bottom: none; }
+        .label { color: #64748b; }
+        .value { font-weight: 600; color: #1e293b; }
+        .btn { display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 5px; }
+        .btn-outline { background: white; color: #10b981; border: 2px solid #10b981; }
+        .footer { background: #f8fafc; padding: 20px; text-align: center; color: #64748b; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 New Booking Request!</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ provider_name }},</p>
+            
+            <div class="alert-box">
+                <strong>⚡ Action Required:</strong> You have a new booking request. Please review and respond within 24 hours.
+            </div>
+            
+            <p>A client has booked a consultation with you:</p>
+            
+            <div class="booking-card">
+                <div class="detail-row">
+                    <span class="label">Client</span>
+                    <span class="value">{{ client_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Date</span>
+                    <span class="value">{{ date|date:"l, F j, Y" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Time</span>
+                    <span class="value">{{ time|time:"g:i A" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Amount</span>
+                    <span class="value">₹{{ amount }}</span>
+                </div>
+            </div>
+            
+            <p style="text-align: center;">
+                <a href="#" class="btn">Accept Booking</a>
+                <a href="#" class="btn btn-outline">View Details</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p>© 2026 Legal Platform. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Incentive Program - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-12 animate-fade-in">
+            <span class="text-5xl mb-4 block  ">🎯</span>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4" style="color: #111827 !important; -webkit-text-fill-color: #111827 !important;">Provider Incentive Program</h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto" style="color: #4b5563 !important; -webkit-text-fill-color: #4b5563 !important;">
+                Earn points, unlock benefits, and grow your practice with our rewards program.
+            </p>
+        </div>
+        
+        <!-- Reward Tiers -->
+        <div class="mb-16">
+            <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Reward Tiers</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                {% for tier in reward_tiers %}
+                <div class="bg-white rounded-xl p-6 shadow-lg border-2 
+                            {% if tier.name == 'Platinum' %}border-blue-400{% elif tier.name == 'Gold' %}border-yellow-400{% elif tier.name == 'Silver' %}border-gray-400{% else %}border-amber-300{% endif %}">
+                    <div class="text-center mb-6">
+                        <span class="text-5xl">
+                            {% if tier.name == 'Platinum' %}💎{% elif tier.name == 'Gold' %}🥇{% elif tier.name == 'Silver' %}🥈{% else %}🥉{% endif %}
+                        </span>
+                        <h3 class="text-xl font-bold text-gray-900 mt-3">{{ tier.name }}</h3>
+                        <p class="text-2xl font-bold text-primary-600 mt-2">{{ tier.min_points }}+</p>
+                        <p class="text-sm text-gray-600">points required</p>
+                    </div>
+                    <ul class="space-y-3">
+                        {% for benefit in tier.benefits %}
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-500 mt-0.5">✓</span>
+                            <span class="text-sm text-gray-600">{{ benefit }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- How to Earn Points -->
+        <div class="mb-16">
+            <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">How to Earn Points</h2>
+            
+            <!-- Quality -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">⭐</span>
+                    Quality Incentives
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    {% for rule in incentive_rules %}
+                    {% if rule.category == 'quality' %}
+                    <div class="bg-white rounded-lg p-4 border flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ rule.name }}</p>
+                            <p class="text-sm text-gray-600">{{ rule.description }}</p>
+                        </div>
+                        <span class="text-lg font-bold text-green-600">+{{ rule.points_awarded }}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Responsiveness -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">⚡</span>
+                    Responsiveness Incentives
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    {% for rule in incentive_rules %}
+                    {% if rule.category == 'responsiveness' %}
+                    <div class="bg-white rounded-lg p-4 border flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ rule.name }}</p>
+                            <p class="text-sm text-gray-600">{{ rule.description }}</p>
+                        </div>
+                        <span class="text-lg font-bold text-blue-600">+{{ rule.points_awarded }}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Volume -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">📊</span>
+                    Volume Incentives
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    {% for rule in incentive_rules %}
+                    {% if rule.category == 'volume' %}
+                    <div class="bg-white rounded-lg p-4 border flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ rule.name }}</p>
+                            <p class="text-sm text-gray-600">{{ rule.description }}</p>
+                        </div>
+                        <span class="text-lg font-bold text-purple-600">+{{ rule.points_awarded }}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Social -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">🤝</span>
+                    Social Impact Incentives
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    {% for rule in incentive_rules %}
+                    {% if rule.category == 'social' %}
+                    <div class="bg-white rounded-lg p-4 border flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ rule.name }}</p>
+                            <p class="text-sm text-gray-600">{{ rule.description }}</p>
+                        </div>
+                        <span class="text-lg font-bold text-orange-600">+{{ rule.points_awarded }}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA -->
+        <div class="bg-gradient-to-br from-primary-50 to-accent/10 rounded-2xl p-8 text-center">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Ready to Start Earning?</h2>
+            <p class="text-gray-600 mb-6">Join our platform and start earning incentive points today!</p>
+            <a href="{% url 'become_provider' %}" class="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition inline-block">
+                Become a Provider
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

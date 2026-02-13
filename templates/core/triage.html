@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load multilingual %}
+
+{% block title %}{% trans "Legal Triage" %} - {% trans "Legal Platform" %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="text-center mb-10">
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium mb-4">
+                🔍 <span class="translatable" data-translate="Smart Matching">{% trans "Smart Matching" %}</span>
+            </span>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4 translatable" data-translate="Legal Triage">{% trans "Legal Triage" %}</h1>
+            <p class="text-gray-600 translatable" data-translate="Answer a few questions and we'll match you with the right legal experts for your needs.">
+                {% trans "Answer a few questions and we'll match you with the right legal experts for your needs." %}
+            </p>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-xl p-8" x-data="triageApp()">
+            <!-- Progress -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span><span class="translatable" data-translate="Question">{% trans "Question" %}</span> <span x-text="currentQuestion + 1"></span> <span class="translatable" data-translate="of">{% trans "of" %}</span> {{ questions|length }}</span>
+                    <span x-text="Math.round((currentQuestion / {{ questions|length }}) * 100) + '%'"></span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-primary-600 h-2 rounded-full transition-all duration-500" 
+                         :style="'width: ' + ((currentQuestion / {{ questions|length }}) * 100) + '%'"></div>
+                </div>
+            </div>
+            
+            <!-- Questions -->
+            {% for question in questions %}
+            <div x-show="currentQuestion === {{ forloop.counter0 }}" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-x-4"
+                 x-transition:enter-end="opacity-100 transform translate-x-0">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">{{ question.question }}</h2>
+                
+                <div class="space-y-3">
+                    {% for option in question.options %}
+                    <button @click="selectAnswer('{{ question.id }}', '{{ option }}', '{{ question.category }}')"
+                            :class="answers['{{ question.id }}'] === '{{ option }}' 
+                                    ? 'border-primary-500 bg-primary-50' 
+                                    : 'border-gray-200 hover:border-primary-300'" class="w-full text-left p-4 border-2 rounded-xl transition">
+                        <span class="text-gray-900">{{ option }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Navigation -->
+            <div class="flex justify-between mt-8">
+                <button @click="previousQuestion()" 
+                        x-show="currentQuestion > 0" class="px-6 py-3 text-gray-600 hover:text-gray-900 transition">
+                    ← <span class="translatable" data-translate="Previous">{% trans "Previous" %}</span>
+                </button>
+                <div x-show="currentQuestion === 0"></div>
+                
+                <button x-show="currentQuestion < {{ questions|length }} - 1"
+                        @click="nextQuestion()"
+                        :disabled="!hasCurrentAnswer()" class="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition disabled:opacity-50">
+                    <span class="translatable" data-translate="Next">{% trans "Next" %}</span> →
+                </button>
+                
+                <button x-show="currentQuestion === {{ questions|length }} - 1"
+                        @click="submitTriage()" class="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition translatable" data-translate="Find Lawyers">
+                    {% trans "Find Lawyers" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function triageApp() {
+    return {
+        currentQuestion: 0,
+        answers: {},
+        questions: {{ questions_json|safe }},
+        selectedCategory: 'other',
+        
+        selectAnswer(questionId, answer, category) {
+            this.answers[questionId] = answer;
+            if (category && category !== 'other') {
+                this.selectedCategory = category;
+            }
+            // Auto-advance for single choice
+            setTimeout(() => {
+                if (this.currentQuestion < this.questions.length - 1) {
+                    this.nextQuestion();
+                }
+            }, 300);
+        },
+        
+        hasCurrentAnswer() {
+            if (this.questions && this.questions[this.currentQuestion]) {
+                return !!this.answers[this.questions[this.currentQuestion].id];
+            }
+            return false;
+        },
+        
+        nextQuestion() {
+            if (this.currentQuestion < this.questions.length - 1) {
+                this.currentQuestion++;
+            }
+        },
+        
+        previousQuestion() {
+            if (this.currentQuestion > 0) {
+                this.currentQuestion--;
+            }
+        },
+        
+        submitTriage() {
+            // Determine category from first answer
+            const firstAnswer = this.answers['q1'] || '';
+            let category = 'other';
+            
+            if (firstAnswer.includes('Family')) category = 'family';
+            else if (firstAnswer.includes('Property')) category = 'property';
+            else if (firstAnswer.includes('Criminal')) category = 'criminal';
+            else if (firstAnswer.includes('Civil')) category = 'civil';
+            else if (firstAnswer.includes('Corporate')) category = 'corporate';
+            else if (firstAnswer.includes('Labor')) category = 'labor';
+            else if (firstAnswer.includes('Tax')) category = 'tax';
+            else if (firstAnswer.includes('Consumer')) category = 'consumer';
+            
+            window.location.href = '/triage/results/?category=' + category;
+        }
+    }
+}
+</script>
+{% endblock %}

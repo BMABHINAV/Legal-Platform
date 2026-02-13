@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load multilingual %}
+
+{% block title %}{% trans "Document Analyzer" %} - {% trans "Legal Platform" %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-purple-50/30 py-12">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <div class="badge badge-lg badge-primary gap-2 mb-6 shadow-lg   ">
+                    <span class="text-lg">🧠</span>
+                    <span class="translatable" data-translate="AI-Powered Analysis">{% trans "AI-Powered Analysis" %}</span>
+                    <span class="badge badge-secondary badge-sm translatable" data-translate="NEW">{% trans "NEW" %}</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="translatable" data-translate="Document">{% trans "Document" %}</span> <span class="bg-gradient-to-r from-purple-600 to-accent bg-clip-text text-transparent translatable" data-translate="Analyzer">{% trans "Analyzer" %}</span>
+                </h1>
+                <p class="text-lg opacity-70 max-w-2xl mx-auto translatable" data-translate="Upload your legal documents and get instant AI-powered analysis with risk assessment, plain language summaries, and actionable recommendations.">
+                    {% trans "Upload your legal documents and get instant AI-powered analysis with risk assessment, plain language summaries, and actionable recommendations." %}
+                </p>
+            </div>
+            
+            <!-- Features Row -->
+            <div class="grid grid-cols-3 gap-4 mb-10 ">
+                <div class="card bg-base-100/80 backdrop-blur shadow-lg border border-base-200">
+                    <div class="card-body items-center text-center p-4">
+                        <span class="text-3xl">🔍</span>
+                        <p class="font-medium text-sm translatable" data-translate="Risk Detection">{% trans "Risk Detection" %}</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100/80 backdrop-blur shadow-lg border border-base-200">
+                    <div class="card-body items-center text-center p-4">
+                        <span class="text-3xl">📝</span>
+                        <p class="font-medium text-sm translatable" data-translate="Plain Summary">{% trans "Plain Summary" %}</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100/80 backdrop-blur shadow-lg border border-base-200">
+                    <div class="card-body items-center text-center p-4">
+                        <span class="text-3xl">💡</span>
+                        <p class="font-medium text-sm translatable" data-translate="Smart Tips">{% trans "Smart Tips" %}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upload Card -->
+            <div class="card bg-base-100/80 backdrop-blur-xl shadow-2xl" x-data="documentAnalyzer()">
+                <div class="card-body p-8">
+                <form @submit.prevent="analyzeDocument" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Dropzone -->
+                    <div class="relative border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer group"
+                         :class="dragover ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-400 hover:bg-gray-50'"
+                         @dragover.prevent="dragover = true"
+                         @dragleave.prevent="dragover = false"
+                         @drop.prevent="handleDrop($event)"
+                         @click="$refs.fileInput.click()">
+                        
+                        <!-- Decorative corners -->
+                        <div class="absolute top-3 left-3 w-6 h-6 border-l-2 border-t-2 border-primary-400/50 rounded-tl-lg"></div>
+                        <div class="absolute top-3 right-3 w-6 h-6 border-r-2 border-t-2 border-primary-400/50 rounded-tr-lg"></div>
+                        <div class="absolute bottom-3 left-3 w-6 h-6 border-l-2 border-b-2 border-primary-400/50 rounded-bl-lg"></div>
+                        <div class="absolute bottom-3 right-3 w-6 h-6 border-r-2 border-b-2 border-primary-400/50 rounded-br-lg"></div>
+                        
+                        <input type="file" 
+                               name="document" 
+                               x-ref="fileInput" 
+                               @change="handleFileSelect($event)"
+                               accept=".pdf,.docx,.txt" class="hidden">
+                        
+                        <div x-show="!selectedFile">
+                            <div class="w-20 h-20 bg-gradient-to-br from-primary-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                                <span class="text-4xl">📄</span>
+                            </div>
+                            <p class="text-lg font-medium text-gray-900 mb-2">Drag and drop your document here</p>
+                            <p class="text-gray-600 mb-4">or <span class="text-primary-600 font-medium">browse</span> from your computer</p>
+                            <div class="flex items-center justify-center gap-4 text-sm text-gray-400">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+                                    PDF
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+                                    DOCX
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+                                    TXT
+                                </span>
+                                <span>•</span>
+                                <span>Max 10MB</span>
+                            </div>
+                        </div>
+                        
+                        <div x-show="selectedFile" class="text-left" x-transition>
+                            <div class="flex items-center gap-4 bg-primary-50 rounded-xl p-4">
+                                <div class="w-14 h-14 bg-gradient-to-br from-primary-500 to-accent rounded-xl flex items-center justify-center">
+                                    <span class="text-2xl text-white">📄</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-gray-900 truncate" x-text="selectedFile?.name"></p>
+                                    <p class="text-sm text-gray-500" x-text="formatFileSize(selectedFile?.size)"></p>
+                                </div>
+                                <button type="button" @click.stop="selectedFile = null" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div x-show="error" x-transition class="mt-4 p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm flex items-center gap-3">
+                        <span class="text-xl">⚠️</span>
+                        <span x-text="error"></span>
+                    </div>
+                    
+                    <!-- Progress -->
+                    <div x-show="isAnalyzing" x-transition class="mt-6 bg-primary-50 rounded-xl p-6">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/25">
+                                <svg class="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900" x-text="currentStep"></p>
+                                <p class="text-sm text-gray-600">AI is processing your document...</p>
+                            </div>
+                            <span class="text-2xl font-bold text-primary-600" x-text="progress + '%'"></span>
+                        </div>
+                        <div class="w-full bg-white rounded-full h-3 shadow-inner">
+                            <div class="bg-gradient-to-r from-primary-500 to-accent h-3 rounded-full transition-all duration-500 shadow-md" :style="'width: ' + progress + '%'"></div>
+                        </div>
+                        <div class="mt-3 flex items-center justify-center gap-6 text-xs text-gray-500">
+                            <span class="flex items-center gap-1.5" :class="progress >= 20 ? 'text-primary-600 font-medium' : ''">
+                                <span :class="progress >= 20 ? 'bg-primary-600' : 'bg-gray-300'" class="w-1.5 h-1.5 rounded-full"></span>
+                                Extracting text
+                            </span>
+                            <span class="flex items-center gap-1.5" :class="progress >= 50 ? 'text-primary-600 font-medium' : ''">
+                                <span :class="progress >= 50 ? 'bg-primary-600' : 'bg-gray-300'" class="w-1.5 h-1.5 rounded-full"></span>
+                                Analyzing
+                            </span>
+                            <span class="flex items-center gap-1.5" :class="progress >= 80 ? 'text-primary-600 font-medium' : ''">
+                                <span :class="progress >= 80 ? 'bg-primary-600' : 'bg-gray-300'" class="w-1.5 h-1.5 rounded-full"></span>
+                                Generating report
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="mt-8 text-center">
+                        <button type="submit" 
+                                :disabled="!selectedFile || isAnalyzing" class="group px-10 py-4 bg-gradient-to-r from-primary-600 via-purple-600 to-accent text-white rounded-xl font-semibold hover:shadow-2xl hover:shadow-primary-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 disabled:hover:translate-y-0">
+                            <span x-show="!isAnalyzing" class="inline-flex items-center gap-3">
+                                <span class="text-xl">🧠</span>
+                                Analyze Document
+                                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                            </span>
+                            <span x-show="isAnalyzing" class="inline-flex items-center gap-2">
+                                <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                Analyzing...
+                            </span>
+                        </button>
+                </div>
+            </form>
+            
+            <!-- Results -->
+            <div x-show="analysis" class="mt-8 border-t pt-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Analysis Results</h2>
+                    <span x-show="analysis?.ai_provider" class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm rounded-full shadow-lg shadow-green-500/25">
+                        <span x-show="analysis?.ai_provider?.includes('groq') || analysis?.ai_provider?.includes('llama')" class="animate-pulse">⚡</span>
+                        <span x-show="!analysis?.ai_provider?.includes('groq') && !analysis?.ai_provider?.includes('llama')">🤖</span>
+                        <span x-text="analysis?.ai_provider?.includes('groq') || analysis?.ai_provider?.includes('llama') ? 'Analyzed by Llama 3.1' : 'Analyzed by Gemini'"></span>
+                    </span>
+                </div>
+                
+                <!-- Health Score -->
+                <div class="bg-gradient-to-br from-primary-50 to-accent/10 rounded-xl p-6 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Document Health Score</h3>
+                            <p class="text-sm text-gray-600" x-text="analysis?.summary?.type_label"></p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-4xl font-bold" 
+                                 :class="{
+                                     'text-green-600': analysis?.health_score >= 80,
+                                     'text-yellow-600': analysis?.health_score >= 60 && analysis?.health_score < 80,
+                                     'text-orange-600': analysis?.health_score >= 40 && analysis?.health_score < 60,
+                                     'text-red-600': analysis?.health_score < 40
+                                 }"
+                                 x-text="analysis?.health_score + '/100'"></div>
+                            <span class="px-3 py-1 rounded-full text-sm font-medium capitalize"
+                                  :class="{
+                                      'bg-green-100 text-green-700': analysis?.risk_level === 'safe',
+                                      'bg-blue-100 text-blue-700': analysis?.risk_level === 'low',
+                                      'bg-yellow-100 text-yellow-700': analysis?.risk_level === 'medium',
+                                      'bg-red-100 text-red-700': analysis?.risk_level === 'high'
+                                  }"
+                                  x-text="analysis?.risk_level + ' Risk'"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Summary -->
+                <div class="bg-white border rounded-xl p-6 mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">📝 Summary</h3>
+                    <p class="text-gray-600 mb-4" x-text="analysis?.summary?.plain_summary_en"></p>
+                    
+                    <div x-show="analysis?.summary?.parties?.length > 0" class="mb-4">
+                        <h4 class="text-sm font-medium text-gray-900 mb-2">Parties Involved:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="party in analysis?.summary?.parties || []">
+                                <span class="px-3 py-1 bg-gray-100 rounded-full text-sm" x-text="party"></span>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div x-show="analysis?.summary?.key_points?.length > 0">
+                        <h4 class="text-sm font-medium text-gray-900 mb-2">Key Points:</h4>
+                        <ul class="list-disc list-inside space-y-1 text-gray-600">
+                            <template x-for="point in analysis?.summary?.key_points || []">
+                                <li x-text="point"></li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Risks -->
+                <div x-show="analysis?.risks?.length > 0" class="bg-white border rounded-xl p-6 mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">⚠️ Risk Clauses</h3>
+                    <div class="space-y-4">
+                        <template x-for="risk in analysis?.risks || []">
+                            <div class="border-l-4 p-4 rounded-r-lg"
+                                 :class="{
+                                     'border-red-500 bg-red-50': risk.risk_level === 'high',
+                                     'border-yellow-500 bg-yellow-50': risk.risk_level === 'medium',
+                                     'border-blue-500 bg-blue-50': risk.risk_level === 'low'
+                                 }">
+                                <div class="flex items-start justify-between mb-2">
+                                    <span class="px-2 py-1 rounded text-xs font-medium capitalize"
+                                          :class="{
+                                              'bg-red-200 text-red-800': risk.risk_level === 'high',
+                                              'bg-yellow-200 text-yellow-800': risk.risk_level === 'medium',
+                                              'bg-blue-200 text-blue-800': risk.risk_level === 'low'
+                                          }"
+                                          x-text="risk.risk_level + ' Risk'"></span>
+                                </div>
+                                <p class="text-sm text-gray-700 italic mb-2" x-text="'\"' + risk.original_text?.substring(0, 200) + '...\"'"></p>
+                                <p class="text-sm text-gray-900 font-medium mb-1" x-text="risk.explanation"></p>
+                                <p class="text-sm text-gray-600" x-text="'💡 ' + risk.plain_language"></p>
+                                <p x-show="risk.suggestion" class="text-sm text-green-700 mt-2" x-text="'✅ Suggestion: ' + risk.suggestion"></p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Recommendations -->
+                <div x-show="analysis?.recommendations?.length > 0" class="bg-white border rounded-xl p-6 mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">💡 Recommendations</h3>
+                    <ul class="space-y-2">
+                        <template x-for="rec in analysis?.recommendations || []">
+                            <li class="flex items-start gap-2">
+                                <span class="text-green-500">✓</span>
+                                <span class="text-gray-600" x-text="rec"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                
+                <!-- Suggested Lawyers -->
+                <div x-show="analysis?.suggested_lawyer_categories?.length > 0" class="bg-gradient-to-br from-primary-50 to-accent/10 rounded-xl p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">👨‍⚖️ Suggested Legal Experts</h3>
+                    <p class="text-gray-600 mb-4">Based on your document, you may want to consult:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="cat in analysis?.suggested_lawyer_categories || []">
+                            <a :href="'/providers/?category=' + cat" class="px-4 py-2 bg-white border border-primary-200 rounded-lg text-primary-600 hover:bg-primary-50 transition capitalize"
+                               x-text="cat + ' Lawyer'"></a>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Supported Types -->
+        <div class="mt-10 bg-white rounded-xl p-6 shadow-sm">
+            <h3 class="font-semibold text-gray-900 mb-4 text-center">Supported Document Types</h3>
+            <div class="flex flex-wrap justify-center gap-2">
+                {% for type in supported_types %}
+                <span class="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700">{{ type }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Trust Note -->
+        <p class="text-center text-sm text-gray-500 mt-8">
+            🔒 Your documents are processed securely and never stored on our servers
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function documentAnalyzer() {
+    return {
+        selectedFile: null,
+        isAnalyzing: false,
+        error: null,
+        analysis: null,
+        progress: 0,
+        currentStep: 'Uploading document...',
+        dragover: false,
+        
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            this.validateAndSetFile(file);
+        },
+        
+        handleDrop(event) {
+            this.dragover = false;
+            const file = event.dataTransfer.files[0];
+            this.validateAndSetFile(file);
+        },
+        
+        validateAndSetFile(file) {
+            if (!file) return;
+            
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+            const validExtensions = ['.pdf', '.docx', '.txt'];
+            
+            const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+            
+            if (!hasValidExtension) {
+                this.error = 'Please upload a PDF, DOCX, or TXT file';
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                this.error = 'File size must be less than 10MB';
+                return;
+            }
+            
+            this.selectedFile = file;
+            this.error = null;
+            this.analysis = null;
+        },
+        
+        formatFileSize(bytes) {
+            if (!bytes) return '';
+            const kb = bytes / 1024;
+            if (kb < 1024) return kb.toFixed(1) + ' KB';
+            return (kb / 1024).toFixed(1) + ' MB';
+        },
+        
+        async analyzeDocument() {
+            if (!this.selectedFile) return;
+            
+            this.isAnalyzing = true;
+            this.error = null;
+            this.analysis = null;
+            this.progress = 0;
+            
+            // Simulate progress
+            const steps = [
+                { step: 'Uploading document...', progress: 10 },
+                { step: 'Extracting text...', progress: 30 },
+                { step: 'Analyzing with AI...', progress: 60 },
+                { step: 'Generating report...', progress: 90 },
+            ];
+            
+            let stepIndex = 0;
+            const progressInterval = setInterval(() => {
+                if (stepIndex < steps.length) {
+                    this.currentStep = steps[stepIndex].step;
+                    this.progress = steps[stepIndex].progress;
+                    stepIndex++;
+                }
+            }, 1000);
+            
+            try {
+                const formData = new FormData();
+                formData.append('document', this.selectedFile);
+                
+                const response = await fetch('{% url "analyze_document" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Analysis failed');
+                }
+                
+                this.analysis = await response.json();
+                this.progress = 100;
+                this.currentStep = 'Analysis complete!';
+            } catch (err) {
+                this.error = err.message || 'An error occurred during analysis';
+            } finally {
+                clearInterval(progressInterval);
+                this.isAnalyzing = false;
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

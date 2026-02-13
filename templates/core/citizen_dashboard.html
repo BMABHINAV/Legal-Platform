@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Dashboard - Legal Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-card {
+        transition: all 0.3s ease;
+    }
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2);
+    }
+    .stat-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+        backdrop-filter: blur(10px);
+    }
+    .booking-status {
+        animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+    <div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+                    Welcome back, <span class="gradient-text">{{ user.get_full_name|default:user.username }}</span>! 👋
+                </h1>
+                <p class="text-gray-600 mt-2">Manage your legal matters, bookings, and documents all in one place</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex gap-3">
+                <a href="{% url 'my_bookings' %}" class="btn btn-primary btn-sm gap-2">
+                    📅 My Bookings
+                </a>
+                <a href="{% url 'profile' %}" class="btn btn-outline btn-sm gap-2">
+                    ⚙️ Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 ">
+            <div class="stat-card rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                        <span class="text-2xl">⏳</span>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900"><span data-countup="{{ pending_bookings }}">{{ pending_bookings }}</span></p>
+                        <p class="text-sm text-gray-500">Pending Bookings</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                        <span class="text-2xl">✅</span>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900"><span data-countup="{{ completed_bookings }}">{{ completed_bookings }}</span></p>
+                        <p class="text-sm text-gray-500">Completed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <span class="text-2xl">📄</span>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900"><span data-countup="{{ recent_analyses|length }}">{{ recent_analyses|length }}</span></p>
+                        <p class="text-sm text-gray-500">Documents</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center">
+                        <span class="text-2xl">❤️</span>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900"><span data-countup="{{ favorites|length }}">{{ favorites|length }}</span></p>
+                        <p class="text-sm text-gray-500">Favorites</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="grid md:grid-cols-4 gap-4 mb-8">
+            <a href="{% url 'document_analyzer' %}" class="dashboard-card bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg border border-gray-100 group">
+                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-2xl">📄</span>
+                </div>
+                <h3 class="font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">Analyze Document</h3>
+                <p class="text-sm text-gray-500">AI-powered document analysis</p>
+            </a>
+            
+            <a href="{% url 'ai_assistant' %}" class="dashboard-card bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg border border-gray-100 group">
+                <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-2xl">🤖</span>
+                </div>
+                <h3 class="font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">AI Assistant</h3>
+                <p class="text-sm text-gray-500">Get instant legal guidance</p>
+            </a>
+            
+            <a href="{% url 'providers' %}" class="dashboard-card bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg border border-gray-100 group">
+                <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-2xl">👨‍⚖️</span>
+                </div>
+                <h3 class="font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">Find Lawyers</h3>
+                <p class="text-sm text-gray-500">Browse verified professionals</p>
+            </a>
+            
+            <a href="{% url 'emergency_page' %}" class="dashboard-card bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg border border-red-100 group">
+                <div class="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-2xl">🆘</span>
+                </div>
+                <h3 class="font-bold text-gray-900 mb-1 group-hover:text-red-600 transition-colors">Emergency Help</h3>
+                <p class="text-sm text-gray-500">Urgent legal assistance</p>
+            </a>
+        </div>
+        
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Recent Bookings -->
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        📅 Recent Bookings
+                    </h2>
+                    <a href="{% url 'my_bookings' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                        View all →
+                    </a>
+                </div>
+                
+                {% if bookings %}
+                <div class="space-y-4">
+                    {% for booking in bookings %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent rounded-xl flex items-center justify-center text-white font-bold">
+                                {{ booking.provider.user.get_full_name|slice:":1"|default:"L" }}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ booking.provider.user.get_full_name }}</p>
+                                <p class="text-sm text-gray-500">
+                                    {{ booking.scheduled_date|date:"M d, Y" }} at {{ booking.scheduled_time|time:"g:i A" }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                {% if booking.status == 'confirmed' or booking.status == 'accepted' %}
+                                    bg-green-100 text-green-700
+                                {% elif booking.status == 'pending' or booking.status == 'payment_pending' %}
+                                    bg-yellow-100 text-yellow-700 booking-status
+                                {% elif booking.status == 'completed' %}
+                                    bg-blue-100 text-blue-700
+                                {% elif booking.status == 'cancelled' %}
+                                    bg-red-100 text-red-700
+                                {% else %}
+                                    bg-gray-100 text-gray-700
+                                {% endif %}">
+                                {{ booking.get_status_display }}
+                            </span>
+                            <p class="text-sm font-medium text-gray-900 mt-1">₹{{ booking.amount }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-4xl">📭</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">No bookings yet</p>
+                    <a href="{% url 'providers' %}" class="btn btn-primary btn-sm gap-2">
+                        Find a Lawyer
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Recent Analyses -->
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        📄 Document Analyses
+                    </h2>
+                    <a href="{% url 'document_analyzer' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                        Analyze new →
+                    </a>
+                </div>
+                
+                {% if recent_analyses %}
+                <div class="space-y-4">
+                    {% for analysis in recent_analyses %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <span class="text-xl">📄</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 truncate max-w-[200px]">{{ analysis.file_name }}</p>
+                                <p class="text-sm text-gray-500">{{ analysis.analyzed_at|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right flex items-center gap-3">
+                            <div>
+                                <p class="text-lg font-bold 
+                                    {% if analysis.health_score >= 80 %}text-green-600
+                                    {% elif analysis.health_score >= 60 %}text-yellow-600
+                                    {% else %}text-red-600{% endif %}">
+                                    {{ analysis.health_score|floatformat:0 }}%
+                                </p>
+                                <p class="text-xs text-gray-500 capitalize">{{ analysis.risk_level }} Risk</p>
+                            </div>
+                            <a href="{% url 'document_results' %}?id={{ analysis.id }}" class="btn btn-ghost btn-sm btn-circle">
+                                →
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-4xl">📋</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">No documents analyzed yet</p>
+                    <a href="{% url 'document_analyzer' %}" class="btn btn-primary btn-sm gap-2">
+                        Analyze Document
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Favorite Lawyers -->
+        {% if favorites %}
+        <div class="mt-8 bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    ❤️ Favorite Lawyers
+                </h2>
+                <a href="{% url 'my_favorites' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                    View all →
+                </a>
+            </div>
+            
+            <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {% for fav in favorites %}
+                <a href="{% url 'provider_detail' fav.provider.id %}" class="group text-center p-4 bg-gray-50 rounded-xl hover:bg-gradient-to-br hover:from-primary-50 hover:to-purple-50 transition-all">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent rounded-2xl flex items-center justify-center text-white text-xl font-bold mx-auto mb-3 group-hover:scale-110 transition-transform">
+                        {{ fav.provider.user.get_full_name|slice:":1"|default:"L" }}
+                    </div>
+                    <p class="font-medium text-gray-900 truncate group-hover:text-primary-600 transition-colors">
+                        {{ fav.provider.user.get_full_name }}
+                    </p>
+                    <p class="text-xs text-gray-500 capitalize">{{ fav.provider.provider_type }}</p>
+                    <div class="flex items-center justify-center gap-1 mt-2">
+                        <span class="text-yellow-500">★</span>
+                        <span class="text-sm font-medium">{{ fav.provider.rating }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Quick Help Section -->
+        <div class="mt-8 grid md:grid-cols-3 gap-6">
+            <a href="{% url 'triage' %}" class="dashboard-card bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white group">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-2xl">🎯</span>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Legal Triage</h3>
+                <p class="text-white/80 text-sm">Answer questions to find the right type of legal help for your situation</p>
+            </a>
+            
+            <a href="{% url 'case_predictor' %}" class="dashboard-card bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl p-6 text-white group">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-2xl">🔮</span>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Case Predictor</h3>
+                <p class="text-white/80 text-sm">Get AI-powered predictions about your case outcomes</p>
+            </a>
+            
+            <a href="{% url 'crowdfunding_list' %}" class="dashboard-card bg-gradient-to-br from-orange-500 to-pink-600 rounded-2xl p-6 text-white group">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span class="text-2xl">💰</span>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Crowdfunding</h3>
+                <p class="text-white/80 text-sm">Fund or donate to legal cases that need support</p>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

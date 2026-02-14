@@ -10,36 +10,99 @@
     </div>
     
     <!-- Stats -->
-    <div class="grid md:grid-cols-3 gap-6 mb-8 ">
-        <div class="bg-white rounded-xl p-6 shadow-sm ">
+    <div class="grid md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-6 shadow-sm">
             <p class="text-gray-600 text-sm mb-1">Total Users</p>
             <p class="text-3xl font-bold text-primary-600" data-countup>{{ total_users }}</p>
         </div>
-        <div class="bg-white rounded-xl p-6 shadow-sm ">
+        <div class="bg-white rounded-xl p-6 shadow-sm">
             <p class="text-gray-600 text-sm mb-1">Total Providers</p>
             <p class="text-3xl font-bold text-green-600" data-countup>{{ total_providers }}</p>
         </div>
-        <div class="bg-white rounded-xl p-6 shadow-sm ">
+        <div class="bg-white rounded-xl p-6 shadow-sm">
             <p class="text-gray-600 text-sm mb-1">Document Analyses</p>
             <p class="text-3xl font-bold text-blue-600" data-countup>{{ total_analyses }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <p class="text-gray-600 text-sm mb-1">Total Bookings</p>
+            <p class="text-3xl font-bold text-purple-600" data-countup>{{ total_bookings }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <p class="text-gray-600 text-sm mb-1">Pending Bookings</p>
+            <p class="text-3xl font-bold text-yellow-600" data-countup>{{ pending_bookings }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <p class="text-gray-600 text-sm mb-1">Total Revenue</p>
+            <p class="text-2xl font-bold text-green-600">₹{{ total_revenue|floatformat:0 }}</p>
         </div>
     </div>
     
     <!-- Quick Links -->
+    <div class="grid md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">User Management</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="{% url 'admin_users' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                    <span class="text-2xl mb-2 block">👥</span>
+                    <span class="font-medium">All Users</span>
+                </a>
+                <a href="{% url 'admin_verifications' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center relative">
+                    <span class="text-2xl mb-2 block">✅</span>
+                    <span class="font-medium">Verifications</span>
+                </a>
+                <a href="{% url 'providers' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                    <span class="text-2xl mb-2 block">👨‍⚖️</span>
+                    <span class="font-medium">Providers</span>
+                </a>
+                <a href="{% url 'leaderboard' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                    <span class="text-2xl mb-2 block">🏆</span>
+                    <span class="font-medium">Leaderboard</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Transactions & Bookings</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="{% url 'admin_bookings' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                    <span class="text-2xl mb-2 block">📅</span>
+                    <span class="font-medium">All Bookings</span>
+                </a>
+                <a href="{% url 'admin_payments' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                    <span class="text-2xl mb-2 block">💰</span>
+                    <span class="font-medium">Payments</span>
+                </a>
+                <a href="{% url 'crowdfunding_list' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                    <span class="text-2xl mb-2 block">🤝</span>
+                    <span class="font-medium">Crowdfunding</span>
+                </a>
+                <a href="/admin/" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                    <span class="text-2xl mb-2 block">⚙️</span>
+                    <span class="font-medium">Django Admin</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Platform Tools -->
     <div class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-        <div class="grid md:grid-cols-3 gap-4">
-            <a href="/admin/" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
-                <span class="text-2xl mb-2 block">⚙️</span>
-                <span class="font-medium">Django Admin</span>
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Platform Tools</h2>
+        <div class="grid md:grid-cols-4 gap-4">
+            <a href="{% url 'document_analyzer' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                <span class="text-2xl mb-2 block">📄</span>
+                <span class="font-medium">Document Analyzer</span>
             </a>
-            <a href="{% url 'providers' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
-                <span class="text-2xl mb-2 block">👨‍⚖️</span>
-                <span class="font-medium">View Providers</span>
+            <a href="{% url 'ai_assistant' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                <span class="text-2xl mb-2 block">🤖</span>
+                <span class="font-medium">AI Assistant</span>
             </a>
-            <a href="{% url 'leaderboard' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
-                <span class="text-2xl mb-2 block">🏆</span>
-                <span class="font-medium">Leaderboard</span>
+            <a href="{% url 'case_predictor' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                <span class="text-2xl mb-2 block">⚖️</span>
+                <span class="font-medium">Case Predictor</span>
+            </a>
+            <a href="{% url 'ai_status' %}" class="p-4 border rounded-lg hover:border-primary-300 transition text-center">
+                <span class="text-2xl mb-2 block">🔧</span>
+                <span class="font-medium">AI Status</span>
             </a>
         </div>
     </div>

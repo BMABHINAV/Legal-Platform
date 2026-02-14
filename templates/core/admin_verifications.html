@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Verifications - Admin - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Pending Verifications</h1>
+                <p class="text-gray-600 mt-1">Review and verify provider applications</p>
+            </div>
+            <div class="flex gap-2 mt-4 md:mt-0">
+                <a href="{% url 'admin_users' %}" class="btn btn-outline btn-sm">All Users</a>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline btn-sm">Dashboard</a>
+            </div>
+        </div>
+        
+        {% if pending_providers %}
+        <div class="space-y-6">
+            {% for user in pending_providers %}
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <div class="flex flex-col lg:flex-row lg:items-start gap-6">
+                        <!-- Profile Info -->
+                        <div class="flex-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" alt="{{ user.get_full_name }}" 
+                                     class="w-16 h-16 rounded-full object-cover">
+                                {% else %}
+                                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-primary-600">{{ user.first_name|slice:":1" }}</span>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h2 class="text-xl font-bold">{{ user.get_full_name }}</h2>
+                                    <p class="text-gray-600">{{ user.email }}</p>
+                                    <span class="badge badge-warning badge-sm">Pending Verification</span>
+                                </div>
+                            </div>
+                            
+                            {% if user.provider_profile %}
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <span class="text-xs text-gray-500">Type</span>
+                                    <p class="font-medium">{{ user.provider_profile.get_provider_type_display }}</p>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-gray-500">Experience</span>
+                                    <p class="font-medium">{{ user.provider_profile.years_of_experience }} years</p>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-gray-500">Location</span>
+                                    <p class="font-medium">{{ user.provider_profile.city }}, {{ user.provider_profile.state }}</p>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-gray-500">Bar Number</span>
+                                    <p class="font-medium">{{ user.provider_profile.bar_registration_number|default:"N/A" }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if user.provider_profile.specializations %}
+                            <div class="mb-4">
+                                <span class="text-xs text-gray-500">Specializations</span>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    {% for spec in user.provider_profile.specializations %}
+                                    <span class="badge badge-outline badge-sm">{{ spec }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if user.provider_profile.bio %}
+                            <div class="mb-4">
+                                <span class="text-xs text-gray-500">Bio</span>
+                                <p class="text-gray-700 text-sm">{{ user.provider_profile.bio|truncatewords:50 }}</p>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                            
+                            <p class="text-xs text-gray-500">Applied: {{ user.created_at|date:"F j, Y, g:i a" }}</p>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="flex flex-col gap-3 lg:w-64">
+                            <form id="verify-form-{{ user.id }}" class="space-y-3">
+                                <textarea name="notes" class="textarea textarea-bordered w-full" rows="2" 
+                                          placeholder="Notes (optional)"></textarea>
+                                
+                                <button type="button" onclick="verifyProvider('{{ user.id }}', 'verified')" 
+                                        class="btn btn-success btn-block">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Approve
+                                </button>
+                                <button type="button" onclick="verifyProvider('{{ user.id }}', 'rejected')" 
+                                        class="btn btn-error btn-outline btn-block">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Reject
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16">
+            <div class="text-6xl mb-4">✅</div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No Pending Verifications</h3>
+            <p class="text-gray-600">All provider applications have been reviewed.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function verifyProvider(userId, status) {
+    const form = document.getElementById(`verify-form-${userId}`);
+    const notes = form.querySelector('textarea[name="notes"]').value;
+    
+    const formData = new FormData();
+    formData.append('status', status);
+    formData.append('notes', notes);
+    
+    fetch(`/api/admin/verify/${userId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Verification failed');
+        }
+    });
+}
+</script>
+{% endblock %}

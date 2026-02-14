@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Notifications</h1>
+                <p class="text-gray-600 mt-1">
+                    {% if unread_count > 0 %}
+                    You have {{ unread_count }} unread notification{{ unread_count|pluralize }}
+                    {% else %}
+                    All caught up!
+                    {% endif %}
+                </p>
+            </div>
+            {% if unread_count > 0 %}
+            <button onclick="markAllRead()" class="btn btn-outline btn-sm mt-4 md:mt-0">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Mark All Read
+            </button>
+            {% endif %}
+        </div>
+        
+        {% if notifications %}
+        <div class="space-y-4">
+            {% for notification in notifications %}
+            <div class="card bg-base-100 shadow-sm {% if not notification.is_read %}border-l-4 border-primary-500{% endif %}" 
+                 id="notification-{{ notification.id }}">
+                <div class="card-body p-4">
+                    <div class="flex items-start gap-4">
+                        <!-- Icon based on type -->
+                        <div class="flex-shrink-0">
+                            {% if notification.notification_type == 'booking_request' %}
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <span class="text-xl">📅</span>
+                            </div>
+                            {% elif notification.notification_type == 'booking_accepted' %}
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                                <span class="text-xl">✅</span>
+                            </div>
+                            {% elif notification.notification_type == 'payment_received' %}
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                                <span class="text-xl">💰</span>
+                            </div>
+                            {% elif notification.notification_type == 'document_ready' %}
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                <span class="text-xl">📄</span>
+                            </div>
+                            {% elif notification.notification_type == 'message' %}
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <span class="text-xl">💬</span>
+                            </div>
+                            {% elif notification.notification_type == 'emergency' %}
+                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <span class="text-xl">🚨</span>
+                            </div>
+                            {% else %}
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <span class="text-xl">🔔</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between">
+                                <h3 class="font-semibold text-gray-900 {% if not notification.is_read %}text-primary-600{% endif %}">
+                                    {{ notification.title }}
+                                </h3>
+                                <span class="text-xs text-gray-500 whitespace-nowrap ml-2">
+                                    {{ notification.created_at|timesince }} ago
+                                </span>
+                            </div>
+                            <p class="text-gray-600 text-sm mt-1">{{ notification.message }}</p>
+                            
+                            {% if not notification.is_read %}
+                            <button onclick="markRead('{{ notification.id }}')" 
+                                    class="text-xs text-primary-600 hover:underline mt-2">
+                                Mark as read
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="flex justify-center mt-8">
+            <div class="btn-group">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline">« Prev</a>
+                {% endif %}
+                
+                <span class="btn btn-disabled">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline">Next »</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-16">
+            <div class="text-6xl mb-4">🔔</div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No Notifications</h3>
+            <p class="text-gray-600">You're all caught up! Check back later for updates.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function markRead(notificationId) {
+    fetch(`/api/notifications/${notificationId}/read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const card = document.getElementById(`notification-${notificationId}`);
+            card.classList.remove('border-l-4', 'border-primary-500');
+            card.querySelector('button')?.remove();
+        }
+    });
+}
+
+function markAllRead() {
+    fetch('/api/notifications/mark-all-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+</script>
+{% endblock %}

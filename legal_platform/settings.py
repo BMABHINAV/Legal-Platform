@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',  # Required for allauth
     
     # Third-party apps
     'channels',
@@ -37,6 +38,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_celery_beat',
     'django_celery_results',
+    
+    # Social Authentication
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
     
     # Local apps
     'core',
@@ -52,6 +60,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Required for django-allauth
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -113,6 +122,15 @@ else:
 
 # Custom User Model
 AUTH_USER_MODEL = 'core.User'
+
+# Authentication Backends (for django-allauth)
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Default Django auth
+    'allauth.account.auth_backends.AuthenticationBackend',  # Allauth backend
+]
+
+# Site ID for django.contrib.sites (required by allauth)
+SITE_ID = 1
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -265,5 +283,54 @@ NOTIFICATION_SETTINGS = {
     'booking_reminder_hours': 1,  # Send reminder 1 hour before consultation
 }
 
+# =============================================================================
+# DJANGO ALLAUTH CONFIGURATION (Social Authentication)
+# =============================================================================
+# Allauth account settings (using new configuration format)
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # 'mandatory', 'optional', or 'none'
+ACCOUNT_LOGIN_METHODS = {'email', 'username'}  # Allow login with email or username
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 
+# Social account settings
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'  # Trust social providers for email
 
+# Social Account Providers Configuration
+# Get credentials from:
+# - Google: https://console.cloud.google.com/apis/credentials
+# - GitHub: https://github.com/settings/developers
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+        'APP': {
+            'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
+            'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
+            'key': ''
+        }
+    },
+    'github': {
+        'SCOPE': [
+            'user',
+            'user:email',
+        ],
+        'APP': {
+            'client_id': os.getenv('GITHUB_CLIENT_ID', ''),
+            'secret': os.getenv('GITHUB_CLIENT_SECRET', ''),
+            'key': ''
+        }
+    }
+}
+
+# Redirect URLs after social auth
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = '/social-auth-callback/'

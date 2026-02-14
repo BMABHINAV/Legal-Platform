@@ -239,6 +239,90 @@ class EmailNotificationService:
         except Exception as e:
             logger.error(f"Failed to send verification email: {e}")
             return False
+    
+    @staticmethod
+    def send_login_notification(user, request=None):
+        """Send email notification when user logs in"""
+        try:
+            from django.utils import timezone
+            
+            subject = '🔐 New Login to Your Legal Platform Account'
+            
+            # Get login details
+            login_time = timezone.now()
+            ip_address = 'Unknown'
+            user_agent = 'Unknown'
+            
+            if request:
+                # Get IP address
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                if x_forwarded_for:
+                    ip_address = x_forwarded_for.split(',')[0].strip()
+                else:
+                    ip_address = request.META.get('REMOTE_ADDR', 'Unknown')
+                
+                # Get user agent
+                user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
+                if len(user_agent) > 100:
+                    user_agent = user_agent[:100] + '...'
+            
+            context = {
+                'user': user,
+                'name': user.get_full_name() or user.username,
+                'login_time': login_time,
+                'ip_address': ip_address,
+                'user_agent': user_agent,
+            }
+            
+            html_content = render_to_string('emails/login_notification.html', context)
+            text_content = strip_tags(html_content)
+            
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email],
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+            
+            logger.info(f"Login notification email sent to {user.email}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send login notification email: {e}")
+            return False
+    
+    @staticmethod
+    def send_password_changed(user):
+        """Send email notification when password is changed"""
+        try:
+            from django.utils import timezone
+            
+            subject = '🔒 Password Changed Successfully'
+            
+            context = {
+                'user': user,
+                'name': user.get_full_name() or user.username,
+                'change_time': timezone.now(),
+            }
+            
+            html_content = render_to_string('emails/password_changed.html', context)
+            text_content = strip_tags(html_content)
+            
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email],
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+            
+            logger.info(f"Password changed notification sent to {user.email}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send password changed email: {e}")
+            return False
 
 
 class SMSNotificationService:

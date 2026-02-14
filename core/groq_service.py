@@ -467,12 +467,12 @@ def predict_case_outcome(case_type: str, case_facts: str, model: str = None) -> 
 # VOICE INPUT TRANSCRIPTION (using Groq's Whisper)
 # ============================================================================
 
-def transcribe_audio(audio_file, language: str = 'en') -> dict:
+def transcribe_audio(audio_file_path: str, language: str = 'en') -> dict:
     """
     Transcribe audio using Groq's Whisper model.
     
     Args:
-        audio_file: Audio file object
+        audio_file_path: Path to audio file
         language: Language code (en, hi, etc.)
     
     Returns:
@@ -487,21 +487,103 @@ def transcribe_audio(audio_file, language: str = 'en') -> dict:
         }
     
     try:
-        transcription = client.audio.transcriptions.create(
-            file=audio_file,
-            model="whisper-large-v3",
-            language=language,
-            response_format="text"
-        )
+        with open(audio_file_path, 'rb') as audio_file:
+            transcription = client.audio.transcriptions.create(
+                file=audio_file,
+                model="whisper-large-v3-turbo",
+                language=language if language != 'en' else None,  # Auto-detect for English
+                response_format="text"
+            )
         
         return {
             'success': True,
             'text': transcription,
-            'language': language
+            'language': language,
+            'translated': transcription  # Whisper returns in original language
         }
     
     except Exception as e:
         print(f"Groq Transcription Error: {e}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+
+def get_legal_interpretation(text: str, source_language: str = 'en') -> dict:
+    """
+    Get legal interpretation of user's voice input using Llama 3.1.
+    
+    Args:
+        text: Transcribed text from voice input
+        source_language: Original language of the input
+    
+    Returns:
+        dict with legal interpretation
+    """
+    client = get_groq_client()
+    
+    if not client:
+        return {
+            'success': False,
+            'error': 'GROQ_API_KEY is not configured.'
+        }
+    
+    # Language mapping
+    language_names = {
+        'hi': 'Hindi', 'ta': 'Tamil', 'te': 'Telugu', 'bn': 'Bengali',
+        'mr': 'Marathi', 'gu': 'Gujarati', 'pa': 'Punjabi', 'kn': 'Kannada',
+        'ml': 'Malayalam', 'or': 'Odia', 'en': 'English'
+    }
+    
+    try:
+        prompt = f"""A user seeking legal help in India spoke the following in {language_names.get(source_language, 'their language')}:
+
+"{text}"
+
+Please analyze this and provide:
+
+1. **Summary of Legal Issue**: What is the user's problem in simple terms?
+
+2. **Applicable Indian Laws**: What laws/sections may be relevant? (e.g., IPC, CrPC, CPC, Contract Act, etc.)
+
+3. **Type of Legal Matter**: Is this criminal, civil, family, property, consumer, labor, or other?
+
+4. **Recommended Actions**: What should the user do next?
+
+5. **Type of Lawyer Needed**: What kind of advocate would be best for this case?
+
+6. **Urgency Level**: Is this urgent (requires immediate action) or can it wait?
+
+Respond in a clear, structured format that a common person can understand.
+If the issue is not legal in nature, politely clarify and suggest appropriate help."""
+
+        messages = [
+            {
+                "role": "system", 
+                "content": "You are an expert Indian legal assistant. Help users understand their legal issues in simple terms. Be empathetic and helpful."
+            },
+            {"role": "user", "content": prompt}
+        ]
+        
+        response = client.chat.completions.create(
+            model=MODEL_FOR_ANALYSIS,
+            messages=messages,
+            temperature=0.5,
+            max_tokens=2048,
+        )
+        
+        interpretation = response.choices[0].message.content
+        
+        return {
+            'success': True,
+            'interpretation': interpretation.strip(),
+            'model_used': MODEL_FOR_ANALYSIS,
+            'tokens_used': response.usage.total_tokens
+        }
+    
+    except Exception as e:
+        print(f"Groq Legal Interpretation Error: {e}")
         return {
             'success': False,
             'error': str(e)

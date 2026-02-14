@@ -6,10 +6,24 @@
 <div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
     <div class="max-w-2xl mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="flex justify-end mb-4">
+                <a href="{% url 'profile_edit' %}" class="btn btn-ghost btn-sm">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Edit Profile
+                </a>
+            </div>
+            
             <div class="text-center mb-8">
-                <div class="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4   ">
+                {% if user.profile_image %}
+                <img src="{{ user.profile_image.url }}" alt="{{ user.get_full_name }}" 
+                     class="w-24 h-24 rounded-full object-cover mx-auto mb-4">
+                {% else %}
+                <div class="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span class="text-4xl font-bold text-primary-600">{{ user.first_name|slice:":1"|default:user.username|slice:":1" }}</span>
                 </div>
+                {% endif %}
                 <h1 class="text-2xl font-bold text-gray-900">{{ user.get_full_name|default:user.username }}</h1>
                 <p class="text-gray-600">{{ user.email }}</p>
                 <span class="inline-block mt-2 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm capitalize">
@@ -47,14 +61,38 @@
                 </div>
             </div>
             
+            <!-- Quick Actions -->
+            <div class="mt-8 grid grid-cols-2 gap-3">
+                <a href="{% url 'notifications' %}" class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <span class="text-xl">🔔</span>
+                    <span class="text-sm font-medium">Notifications</span>
+                </a>
+                <a href="{% url 'my_bookings' %}" class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <span class="text-xl">📅</span>
+                    <span class="text-sm font-medium">My Bookings</span>
+                </a>
+                <a href="{% url 'my_favorites' %}" class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <span class="text-xl">❤️</span>
+                    <span class="text-sm font-medium">Favorites</span>
+                </a>
+                <a href="{% url 'change_password' %}" class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <span class="text-xl">🔒</span>
+                    <span class="text-sm font-medium">Security</span>
+                </a>
+            </div>
+            
             <div class="mt-8 flex gap-4">
                 {% if user.role == 'citizen' %}
                 <a href="{% url 'become_provider' %}" class="flex-1 py-3 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition">
                     Become a Provider
                 </a>
-                {% else %}
+                {% elif user.role == 'provider' %}
                 <a href="{% url 'provider_dashboard' %}" class="flex-1 py-3 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition">
-                    Go to Dashboard
+                    Provider Dashboard
+                </a>
+                {% elif user.role == 'admin' %}
+                <a href="{% url 'admin_dashboard' %}" class="flex-1 py-3 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition">
+                    Admin Dashboard
                 </a>
                 {% endif %}
                 <a href="{% url 'logout' %}" class="flex-1 py-3 border-2 border-gray-300 text-gray-700 text-center rounded-lg font-medium hover:bg-gray-50 transition">

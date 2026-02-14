@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users - Admin - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Manage Users</h1>
+                <p class="text-gray-600 mt-1">{{ total_count }} total users</p>
+            </div>
+            <div class="flex gap-2 mt-4 md:mt-0">
+                <a href="{% url 'admin_verifications' %}" class="btn btn-primary btn-sm">
+                    Pending Verifications
+                </a>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline btn-sm">Dashboard</a>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <form method="get" class="card bg-base-100 shadow-sm mb-6">
+            <div class="card-body p-4">
+                <div class="flex flex-wrap gap-4 items-end">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="text-xs text-gray-500">Search</label>
+                        <input type="text" name="search" value="{{ search_query }}" 
+                               class="input input-bordered input-sm w-full" 
+                               placeholder="Name, email, username...">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500">Role</label>
+                        <select name="role" class="select select-bordered select-sm">
+                            <option value="">All Roles</option>
+                            <option value="citizen" {% if role_filter == 'citizen' %}selected{% endif %}>Citizen</option>
+                            <option value="provider" {% if role_filter == 'provider' %}selected{% endif %}>Provider</option>
+                            <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500">Status</label>
+                        <select name="status" class="select select-bordered select-sm">
+                            <option value="">All Status</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="verified" {% if status_filter == 'verified' %}selected{% endif %}>Verified</option>
+                            <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                    <a href="{% url 'admin_users' %}" class="btn btn-ghost btn-sm">Clear</a>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Users Table -->
+        <div class="card bg-base-100 shadow-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    {% if user.profile_image %}
+                                    <img src="{{ user.profile_image.url }}" alt="" class="w-10 h-10 rounded-full object-cover">
+                                    {% else %}
+                                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                        <span class="font-bold text-gray-600">{{ user.first_name|slice:":1"|default:user.username|slice:":1" }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="font-bold">{{ user.get_full_name|default:user.username }}</div>
+                                        <div class="text-sm text-gray-500">{{ user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if user.role == 'admin' %}badge-error
+                                    {% elif user.role == 'provider' %}badge-info
+                                    {% else %}badge-ghost{% endif %}">
+                                    {{ user.role|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if user.verification_status == 'verified' %}badge-success
+                                    {% elif user.verification_status == 'pending' %}badge-warning
+                                    {% else %}badge-error{% endif %}">
+                                    {{ user.verification_status|title }}
+                                </span>
+                            </td>
+                            <td class="text-sm">{{ user.created_at|date:"M j, Y" }}</td>
+                            <td>
+                                <div class="dropdown dropdown-end">
+                                    <label tabindex="0" class="btn btn-ghost btn-sm">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                                        </svg>
+                                    </label>
+                                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                                        {% if user.role == 'provider' and user.verification_status == 'pending' %}
+                                        <li><a href="{% url 'admin_verifications' %}">Review Application</a></li>
+                                        {% endif %}
+                                        {% if user.role == 'provider' %}
+                                        <li><a href="{% url 'provider_detail' user.id %}">View Profile</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-gray-500">No users found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="flex justify-center mt-8">
+            <div class="btn-group">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&role={{ role_filter }}&status={{ status_filter }}" 
+                   class="btn btn-outline">« Prev</a>
+                {% endif %}
+                
+                <span class="btn btn-disabled">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&role={{ role_filter }}&status={{ status_filter }}" 
+                   class="btn btn-outline">Next »</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Login Notification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+        }
+        .header .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .alert-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .alert-box h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 140px;
+            color: #666;
+        }
+        .info-value {
+            flex: 1;
+            color: #333;
+        }
+        .warning-text {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #721c24;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🔐</div>
+            <h1>New Login Detected</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hello <strong>{{ name }}</strong>,</p>
+            
+            <div class="alert-box">
+                <h3>⚠️ Security Alert</h3>
+                <p>We detected a new sign-in to your Legal Platform account. If this was you, you can safely ignore this email.</p>
+            </div>
+            
+            <h3>Login Details:</h3>
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">📅 Time:</span>
+                    <span class="info-value">{{ login_time|date:"F d, Y" }} at {{ login_time|time:"h:i A" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">🌐 IP Address:</span>
+                    <span class="info-value">{{ ip_address }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">💻 Device:</span>
+                    <span class="info-value">{{ user_agent }}</span>
+                </div>
+            </div>
+            
+            <div class="warning-text">
+                <strong>⚠️ Wasn't you?</strong><br>
+                If you didn't sign in, please immediately:
+                <ol>
+                    <li>Change your password</li>
+                    <li>Review your account activity</li>
+                    <li>Contact our support team</li>
+                </ol>
+            </div>
+            
+            <center>
+                <a href="#" class="btn">Review Account Activity</a>
+            </center>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated security notification from Legal Platform.</p>
+            <p>© {{ login_time|date:"Y" }} Legal Platform. All rights reserved.</p>
+            <p>If you have concerns, contact us at support@legalplatform.com</p>
+        </div>
+    </div>
+</body>
+</html>

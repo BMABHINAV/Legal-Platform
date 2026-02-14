@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}All Payments - Admin - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">All Payments</h1>
+                <p class="text-gray-600 mt-1">{{ total_count }} total payments</p>
+            </div>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline btn-sm mt-4 md:mt-0">Dashboard</a>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="card bg-green-50">
+                <div class="card-body p-4">
+                    <div class="text-sm text-green-600">Total Captured</div>
+                    <div class="text-2xl font-bold text-green-700">₹{{ total_captured|floatformat:0 }}</div>
+                </div>
+            </div>
+            <div class="card bg-red-50">
+                <div class="card-body p-4">
+                    <div class="text-sm text-red-600">Total Refunded</div>
+                    <div class="text-2xl font-bold text-red-700">₹{{ total_refunded|floatformat:0 }}</div>
+                </div>
+            </div>
+            <div class="card bg-blue-50">
+                <div class="card-body p-4">
+                    <div class="text-sm text-blue-600">Net Revenue</div>
+                    <div class="text-2xl font-bold text-blue-700">₹{{ total_captured|add:total_refunded|floatformat:0 }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <form method="get" class="card bg-base-100 shadow-sm mb-6">
+            <div class="card-body p-4">
+                <div class="flex flex-wrap gap-4 items-end">
+                    <div>
+                        <label class="text-xs text-gray-500">Status</label>
+                        <select name="status" class="select select-bordered select-sm">
+                            <option value="">All Status</option>
+                            <option value="created" {% if status_filter == 'created' %}selected{% endif %}>Created</option>
+                            <option value="authorized" {% if status_filter == 'authorized' %}selected{% endif %}>Authorized</option>
+                            <option value="captured" {% if status_filter == 'captured' %}selected{% endif %}>Captured</option>
+                            <option value="refunded" {% if status_filter == 'refunded' %}selected{% endif %}>Refunded</option>
+                            <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                    <a href="{% url 'admin_payments' %}" class="btn btn-ghost btn-sm">Clear</a>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Payments Table -->
+        <div class="card bg-base-100 shadow-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr class="hover">
+                            <td class="font-mono text-sm">{{ payment.razorpay_order_id|slice:":15" }}...</td>
+                            <td>
+                                {% if payment.user %}
+                                <div>
+                                    <div class="font-medium">{{ payment.user.get_full_name|default:payment.user.username }}</div>
+                                    <div class="text-xs text-gray-500">{{ payment.user.email }}</div>
+                                </div>
+                                {% else %}
+                                <span class="text-gray-400">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td class="font-bold">₹{{ payment.amount }}</td>
+                            <td>
+                                <span class="badge badge-ghost badge-sm">{{ payment.get_payment_type_display }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-sm
+                                    {% if payment.status == 'captured' %}badge-success
+                                    {% elif payment.status == 'refunded' %}badge-warning
+                                    {% elif payment.status == 'failed' %}badge-error
+                                    {% elif payment.status == 'authorized' %}badge-info
+                                    {% else %}badge-ghost{% endif %}">
+                                    {{ payment.status|title }}
+                                </span>
+                            </td>
+                            <td class="text-sm">{{ payment.created_at|date:"M j, Y, g:i a" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-gray-500">No payments found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="flex justify-center mt-8">
+            <div class="btn-group">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}" class="btn btn-outline">« Prev</a>
+                {% endif %}
+                
+                <span class="btn btn-disabled">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}" class="btn btn-outline">Next »</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -11,6 +11,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
+    path('social-auth-callback/', views.social_auth_callback, name='social_auth_callback'),
     
     # Providers
     path('providers/', views.providers_list, name='providers'),
@@ -99,6 +100,14 @@ urlpatterns = [
     path('provider/bookings/', views.provider_bookings, name='provider_bookings'),
     path('provider/earnings/', views.provider_earnings, name='provider_earnings'),
     path('provider/availability/', views.provider_availability_manage, name='provider_availability_manage'),
+    path('provider/profile/edit/', views.provider_profile_edit, name='provider_profile_edit'),
+    path('provider/services/', views.provider_services, name='provider_services'),
+    path('provider/services/create/', views.service_create, name='service_create'),
+    path('provider/services/<str:service_id>/edit/', views.service_edit, name='service_edit'),
+    path('api/provider/services/<str:service_id>/delete/', views.service_delete, name='service_delete'),
+    path('api/provider/services/<str:service_id>/toggle/', views.service_toggle_active, name='service_toggle_active'),
+    path('api/provider/time-off/add/', views.add_time_off, name='add_time_off'),
+    path('api/provider/time-off/<str:time_off_id>/remove/', views.remove_time_off, name='remove_time_off'),
     path('api/booking/<str:booking_id>/accept/', views.accept_booking, name='accept_booking'),
     path('api/booking/<str:booking_id>/complete/', views.complete_booking, name='complete_booking'),
     path('api/booking/<str:booking_id>/note/', views.add_consultation_note, name='add_consultation_note'),
@@ -111,4 +120,27 @@ urlpatterns = [
     path('api/provider/<str:provider_id>/favorite/', views.toggle_favorite_provider, name='toggle_favorite'),
     path('api/booking/<str:booking_id>/review/', views.submit_review, name='submit_review'),
     path('api/booking/<str:booking_id>/refund/', views.request_refund, name='request_refund'),
+    
+    # ============================================
+    # PROFILE MANAGEMENT
+    # ============================================
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/change-password/', views.change_password, name='change_password'),
+    
+    # ============================================
+    # NOTIFICATIONS
+    # ============================================
+    path('notifications/', views.notifications_list, name='notifications'),
+    path('api/notifications/<str:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
+    path('api/notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('api/notifications/count/', views.api_notifications_count, name='notifications_count'),
+    
+    # ============================================
+    # ADMIN FEATURES
+    # ============================================
+    path('admin/verifications/', views.admin_pending_verifications, name='admin_verifications'),
+    path('api/admin/verify/<str:user_id>/', views.admin_verify_provider, name='admin_verify_provider'),
+    path('admin/users/', views.admin_users_list, name='admin_users'),
+    path('admin/bookings/', views.admin_bookings_list, name='admin_bookings'),
+    path('admin/payments/', views.admin_payments_list, name='admin_payments'),
 ]

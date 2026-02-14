@@ -120,8 +120,16 @@ def signup_view(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            messages.success(request, 'Account created successfully!')
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            
+            # Send welcome email
+            try:
+                from .notification_service import EmailNotificationService
+                EmailNotificationService.send_welcome_email(user)
+            except Exception as e:
+                print(f"Failed to send welcome email: {e}")
+            
+            messages.success(request, 'Account created successfully! A welcome email has been sent.')
             return redirect('home')
     else:
         form = SignUpForm()
@@ -138,7 +146,15 @@ def login_view(request):
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            
+            # Send login notification email
+            try:
+                from .notification_service import EmailNotificationService
+                EmailNotificationService.send_login_notification(user, request)
+            except Exception as e:
+                print(f"Failed to send login notification: {e}")
+            
             messages.success(request, 'Logged in successfully!')
             next_url = request.GET.get('next', 'home')
             return redirect(next_url)
@@ -153,6 +169,37 @@ def logout_view(request):
     logout(request)
     messages.info(request, 'You have been logged out.')
     return redirect('home')
+
+
+@login_required
+def social_auth_callback(request):
+    """
+    Callback after successful social authentication (Google/GitHub).
+    Sends welcome email for new users or login notification for existing users.
+    """
+    user = request.user
+    
+    # Check if this is a new user (created within last minute)
+    is_new_user = (timezone.now() - user.date_joined).total_seconds() < 60
+    
+    try:
+        from .notification_service import EmailNotificationService
+        
+        if is_new_user:
+            # Send welcome email for new social auth users
+            EmailNotificationService.send_welcome_email(user)
+            messages.success(request, f'Welcome to Legal Platform, {user.get_full_name() or user.username}! Your account has been created successfully.')
+        else:
+            # Send login notification for existing users
+            EmailNotificationService.send_login_notification(user, request)
+            messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
+    except Exception as e:
+        print(f"Failed to send social auth notification email: {e}")
+        messages.success(request, 'Logged in successfully!')
+    
+    # Redirect to home or intended page
+    next_url = request.GET.get('next', 'home')
+    return redirect(next_url)
 
 
 @login_required
@@ -2055,4 +2102,483 @@ def request_refund(request, booking_id):
     return JsonResponse({
         'success': False,
         'error': 'Unable to process refund'
+    })
+
+
+# ============================================
+# PROFILE MANAGEMENT VIEWS
+# ============================================
+
+@login_required
+def profile_edit(request):
+    """Edit user profile"""
+    from .forms import UserProfileEditForm
+    
+    if request.method == 'POST':
+        form = UserProfileEditForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profile')
+    else:
+        form = UserProfileEditForm(instance=request.user)
+    
+    return render(request, 'core/profile_edit.html', {'form': form})
+
+
+@login_required
+def change_password(request):
+    """Change user password"""
+    from .forms import PasswordChangeForm
+    
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.POST)
+        if form.is_valid():
+            if not request.user.check_password(form.cleaned_data['current_password']):
+                messages.error(request, 'Current password is incorrect')
+            else:
+                request.user.set_password(form.cleaned_data['new_password'])
+                request.user.save()
+                # Re-authenticate user
+                from django.contrib.auth import update_session_auth_hash
+                update_session_auth_hash(request, request.user)
+                
+                # Send password changed notification email
+                try:
+                    from .notification_service import EmailNotificationService
+                    EmailNotificationService.send_password_changed(request.user)
+                except Exception as e:
+                    print(f"Failed to send password changed notification: {e}")
+                
+                messages.success(request, 'Password changed successfully!')
+                return redirect('profile')
+    else:
+        form = PasswordChangeForm()
+    
+    return render(request, 'core/change_password.html', {'form': form})
+
+
+@login_required
+def provider_profile_edit(request):
+    """Edit provider profile"""
+    from .forms import ProviderProfileEditForm
+    
+    try:
+        provider = request.user.provider_profile
+    except ProviderProfile.DoesNotExist:
+        messages.error(request, 'Provider profile not found')
+        return redirect('become_provider')
+    
+    if request.method == 'POST':
+        form = ProviderProfileEditForm(request.POST, instance=provider)
+        if form.is_valid():
+            provider = form.save(commit=False)
+            # Handle languages
+            languages_str = form.cleaned_data.get('languages_str', '')
+            provider.languages = [lang.strip() for lang in languages_str.split(',') if lang.strip()]
+            # Handle specializations
+            provider.specializations = form.cleaned_data.get('specializations', [])
+            provider.save()
+            messages.success(request, 'Provider profile updated successfully!')
+            return redirect('provider_dashboard')
+    else:
+        form = ProviderProfileEditForm(instance=provider)
+    
+    return render(request, 'core/provider_profile_edit.html', {'form': form, 'provider': provider})
+
+
+# ============================================
+# SERVICE LISTING MANAGEMENT VIEWS
+# ============================================
+
+@login_required
+def provider_services(request):
+    """List provider's services"""
+    try:
+        provider = request.user.provider_profile
+    except ProviderProfile.DoesNotExist:
+        messages.error(request, 'Provider profile not found')
+        return redirect('become_provider')
+    
+    services = ServiceListing.objects.filter(provider=provider).order_by('-created_at')
+    
+    return render(request, 'core/provider_services.html', {
+        'services': services,
+        'provider': provider
+    })
+
+
+@login_required
+def service_create(request):
+    """Create a new service listing"""
+    from .forms import ServiceListingForm
+    
+    try:
+        provider = request.user.provider_profile
+    except ProviderProfile.DoesNotExist:
+        messages.error(request, 'Provider profile not found')
+        return redirect('become_provider')
+    
+    if request.method == 'POST':
+        form = ServiceListingForm(request.POST)
+        if form.is_valid():
+            service = form.save(commit=False)
+            service.provider = provider
+            # Handle features
+            features_str = form.cleaned_data.get('features_str', '')
+            service.features = [f.strip() for f in features_str.split('\n') if f.strip()]
+            service.save()
+            messages.success(request, 'Service created successfully!')
+            return redirect('provider_services')
+    else:
+        form = ServiceListingForm()
+    
+    return render(request, 'core/service_form.html', {
+        'form': form,
+        'title': 'Create Service',
+        'submit_text': 'Create Service'
+    })
+
+
+@login_required
+def service_edit(request, service_id):
+    """Edit a service listing"""
+    from .forms import ServiceListingForm
+    
+    try:
+        provider = request.user.provider_profile
+    except ProviderProfile.DoesNotExist:
+        messages.error(request, 'Provider profile not found')
+        return redirect('become_provider')
+    
+    service = get_object_or_404(ServiceListing, id=service_id, provider=provider)
+    
+    if request.method == 'POST':
+        form = ServiceListingForm(request.POST, instance=service)
+        if form.is_valid():
+            service = form.save(commit=False)
+            # Handle features
+            features_str = form.cleaned_data.get('features_str', '')
+            service.features = [f.strip() for f in features_str.split('\n') if f.strip()]
+            service.save()
+            messages.success(request, 'Service updated successfully!')
+            return redirect('provider_services')
+    else:
+        form = ServiceListingForm(instance=service)
+    
+    return render(request, 'core/service_form.html', {
+        'form': form,
+        'service': service,
+        'title': 'Edit Service',
+        'submit_text': 'Update Service'
+    })
+
+
+@login_required
+@require_POST
+def service_delete(request, service_id):
+    """Delete a service listing"""
+    try:
+        provider = request.user.provider_profile
+    except ProviderProfile.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Provider profile not found'})
+    
+    service = get_object_or_404(ServiceListing, id=service_id, provider=provider)
+    service.delete()
+    
+    return JsonResponse({'success': True, 'message': 'Service deleted successfully'})
+
+
+@login_required
+@require_POST
+def service_toggle_active(request, service_id):
+    """Toggle service active status"""
+    try:
+        provider = request.user.provider_profile
+    except ProviderProfile.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Provider profile not found'})
+    
+    service = get_object_or_404(ServiceListing, id=service_id, provider=provider)
+    service.is_active = not service.is_active
+    service.save()
+    
+    return JsonResponse({
+        'success': True,
+        'is_active': service.is_active,
+        'message': f'Service {"activated" if service.is_active else "deactivated"} successfully'
+    })
+
+
+# ============================================
+# NOTIFICATIONS VIEWS
+# ============================================
+
+@login_required
+def notifications_list(request):
+    """List user notifications"""
+    from .models import Notification
+    
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    unread_count = notifications.filter(is_read=False).count()
+    
+    # Pagination
+    paginator = Paginator(notifications, 20)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'core/notifications.html', {
+        'notifications': page_obj,
+        'page_obj': page_obj,
+        'unread_count': unread_count
+    })
+
+
+@login_required
+@require_POST
+def mark_notification_read(request, notification_id):
+    """Mark a notification as read"""
+    from .models import Notification
+    
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.is_read = True
+    notification.save()
+    
+    return JsonResponse({'success': True})
+
+
+@login_required
+@require_POST
+def mark_all_notifications_read(request):
+    """Mark all notifications as read"""
+    from .models import Notification
+    
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    
+    return JsonResponse({'success': True, 'message': 'All notifications marked as read'})
+
+
+@login_required
+def api_notifications_count(request):
+    """Get unread notifications count for navbar"""
+    from .models import Notification
+    
+    count = Notification.objects.filter(user=request.user, is_read=False).count()
+    return JsonResponse({'count': count})
+
+
+# ============================================
+# PROVIDER TIME OFF MANAGEMENT
+# ============================================
+
+@login_required
+@require_POST
+def add_time_off(request):
+    """Add time off for provider"""
+    from .forms import ProviderTimeOffForm
+    
+    try:
+        provider = request.user.provider_profile
+    except ProviderProfile.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Provider profile not found'})
+    
+    form = ProviderTimeOffForm(request.POST)
+    if form.is_valid():
+        date = form.cleaned_data['date']
+        reason = form.cleaned_data.get('reason', '')
+        
+        # Check if already exists
+        if ProviderTimeOff.objects.filter(provider=provider, date=date).exists():
+            return JsonResponse({'success': False, 'error': 'Time off already exists for this date'})
+        
+        ProviderTimeOff.objects.create(
+            provider=provider,
+            date=date,
+            reason=reason
+        )
+        
+        return JsonResponse({'success': True, 'message': 'Time off added successfully'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid form data'})
+
+
+@login_required
+@require_POST
+def remove_time_off(request, time_off_id):
+    """Remove time off for provider"""
+    try:
+        provider = request.user.provider_profile
+    except ProviderProfile.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Provider profile not found'})
+    
+    time_off = get_object_or_404(ProviderTimeOff, id=time_off_id, provider=provider)
+    time_off.delete()
+    
+    return JsonResponse({'success': True, 'message': 'Time off removed successfully'})
+
+
+# ============================================
+# ADMIN VERIFICATION VIEWS
+# ============================================
+
+@login_required
+def admin_pending_verifications(request):
+    """List pending provider verifications"""
+    if request.user.role != 'admin':
+        messages.error(request, 'Access denied')
+        return redirect('home')
+    
+    pending_providers = User.objects.filter(
+        role='provider',
+        verification_status='pending'
+    ).select_related('provider_profile').order_by('created_at')
+    
+    return render(request, 'core/admin_verifications.html', {
+        'pending_providers': pending_providers
+    })
+
+
+@login_required
+@require_POST
+def admin_verify_provider(request, user_id):
+    """Verify or reject a provider"""
+    if request.user.role != 'admin':
+        return JsonResponse({'success': False, 'error': 'Access denied'})
+    
+    from .forms import AdminVerificationForm
+    
+    form = AdminVerificationForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'success': False, 'error': 'Invalid form data'})
+    
+    user = get_object_or_404(User, id=user_id, role='provider')
+    status = form.cleaned_data['status']
+    notes = form.cleaned_data.get('notes', '')
+    
+    user.verification_status = status
+    user.save()
+    
+    # Create notification for provider
+    from .models import Notification
+    
+    if status == 'verified':
+        Notification.objects.create(
+            user=user,
+            title='Profile Verified!',
+            message='Congratulations! Your provider profile has been verified. You can now receive bookings.',
+            notification_type='system'
+        )
+        # Award initial points
+        if hasattr(user, 'provider_profile'):
+            user.provider_profile.incentive_points += 100
+            user.provider_profile.save()
+    else:
+        Notification.objects.create(
+            user=user,
+            title='Verification Status Update',
+            message=f'Your provider profile verification was not approved. {notes}'.strip(),
+            notification_type='system'
+        )
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'Provider {"verified" if status == "verified" else "rejected"} successfully'
+    })
+
+
+@login_required
+def admin_users_list(request):
+    """List all users for admin"""
+    if request.user.role != 'admin':
+        messages.error(request, 'Access denied')
+        return redirect('home')
+    
+    role_filter = request.GET.get('role', '')
+    status_filter = request.GET.get('status', '')
+    search_query = request.GET.get('search', '')
+    
+    users = User.objects.all().order_by('-created_at')
+    
+    if role_filter:
+        users = users.filter(role=role_filter)
+    if status_filter:
+        users = users.filter(verification_status=status_filter)
+    if search_query:
+        users = users.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query)
+        )
+    
+    paginator = Paginator(users, 25)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'core/admin_users.html', {
+        'users': page_obj,
+        'page_obj': page_obj,
+        'role_filter': role_filter,
+        'status_filter': status_filter,
+        'search_query': search_query,
+        'total_count': users.count()
+    })
+
+
+@login_required
+def admin_bookings_list(request):
+    """List all bookings for admin"""
+    if request.user.role != 'admin':
+        messages.error(request, 'Access denied')
+        return redirect('home')
+    
+    status_filter = request.GET.get('status', '')
+    
+    bookings = Booking.objects.all().select_related(
+        'user', 'provider', 'provider__user', 'service'
+    ).order_by('-created_at')
+    
+    if status_filter:
+        bookings = bookings.filter(status=status_filter)
+    
+    paginator = Paginator(bookings, 25)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'core/admin_bookings.html', {
+        'bookings': page_obj,
+        'page_obj': page_obj,
+        'status_filter': status_filter,
+        'total_count': bookings.count()
+    })
+
+
+@login_required
+def admin_payments_list(request):
+    """List all payments for admin"""
+    if request.user.role != 'admin':
+        messages.error(request, 'Access denied')
+        return redirect('home')
+    
+    status_filter = request.GET.get('status', '')
+    
+    payments = Payment.objects.all().select_related('user', 'booking').order_by('-created_at')
+    
+    if status_filter:
+        payments = payments.filter(status=status_filter)
+    
+    # Summary stats
+    total_captured = payments.filter(status='captured').aggregate(total=Sum('amount'))['total'] or 0
+    total_refunded = payments.filter(status='refunded').aggregate(total=Sum('amount'))['total'] or 0
+    
+    paginator = Paginator(payments, 25)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'core/admin_payments.html', {
+        'payments': page_obj,
+        'page_obj': page_obj,
+        'status_filter': status_filter,
+        'total_captured': total_captured,
+        'total_refunded': total_refunded,
+        'total_count': payments.count()
     })

@@ -42,6 +42,8 @@ geopy>=2.4.1
 
 # Security & Auth
 django-cors-headers>=4.3.0
+django-allauth>=0.57.0  # Social authentication (Google, GitHub)
+PyJWT>=2.0.0  # Required for Google OAuth
 
 # API & JSON
 djangorestframework>=3.14.0

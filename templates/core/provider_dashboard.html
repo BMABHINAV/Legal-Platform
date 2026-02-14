@@ -61,17 +61,29 @@
         <div class="bg-white rounded-xl shadow-sm p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
             <div class="space-y-3">
+                <a href="{% url 'provider_bookings' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <span class="text-xl">📅</span>
+                    <span>My Bookings</span>
+                </a>
+                <a href="{% url 'provider_services' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <span class="text-xl">📋</span>
+                    <span>Manage Services</span>
+                </a>
+                <a href="{% url 'provider_availability_manage' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <span class="text-xl">🕐</span>
+                    <span>Manage Availability</span>
+                </a>
+                <a href="{% url 'provider_earnings' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <span class="text-xl">💰</span>
+                    <span>Earnings & Payouts</span>
+                </a>
+                <a href="{% url 'provider_profile_edit' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <span class="text-xl">👤</span>
+                    <span>Edit Provider Profile</span>
+                </a>
                 <a href="{% url 'leaderboard' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
                     <span class="text-xl">🏆</span>
                     <span>View Leaderboard</span>
-                </a>
-                <a href="{% url 'incentives' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
-                    <span class="text-xl">🎯</span>
-                    <span>Incentive Program</span>
-                </a>
-                <a href="{% url 'profile' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
-                    <span class="text-xl">👤</span>
-                    <span>Edit Profile</span>
                 </a>
             </div>
         </div>

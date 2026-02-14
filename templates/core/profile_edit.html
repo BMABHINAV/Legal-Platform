@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Legal Platform{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-2xl font-bold text-gray-900">Edit Profile</h1>
+                <a href="{% url 'profile' %}" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </a>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Profile Image Preview -->
+                <div class="flex justify-center mb-6">
+                    <div class="relative">
+                        {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" alt="Profile" class="w-24 h-24 rounded-full object-cover">
+                        {% else %}
+                        <div class="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center">
+                            <span class="text-4xl font-bold text-primary-600">{{ user.first_name|slice:":1"|default:user.username|slice:":1" }}</span>
+                        </div>
+                        {% endif %}
+                        <label class="absolute bottom-0 right-0 bg-primary-600 text-white rounded-full p-2 cursor-pointer hover:bg-primary-700 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <input type="file" name="profile_image" class="hidden" accept="image/*">
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                        <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" 
+                               class="input input-bordered w-full" required>
+                        {% if form.first_name.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.first_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                        <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" 
+                               class="input input-bordered w-full" required>
+                        {% if form.last_name.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.last_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" name="email" value="{{ form.email.value|default:'' }}" 
+                           class="input input-bordered w-full" required>
+                    {% if form.email.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input type="tel" name="phone" value="{{ form.phone.value|default:'' }}" 
+                           class="input input-bordered w-full" placeholder="+91 XXXXXXXXXX">
+                    {% if form.phone.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 btn btn-primary">
+                        Save Changes
+                    </button>
+                    <a href="{% url 'change_password' %}" class="btn btn-outline">
+                        Change Password
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
